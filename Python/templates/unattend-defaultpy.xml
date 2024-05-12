@@ -1,0 +1,12 @@
+<Options>
+    <Option Name="InstallAllUsers" Value="yes" />
+    <Option Name="Include_symbols" Value="0" />
+    <Option Name="SimpleInstall" Value="yes" />
+    <Option Name="PrependPath" Value="0" />
+    <Option Name="CompileAll" Value="0" />
+    <Option Name="Include_launcher" Value="1" />
+    <Option Name="SimpleInstallDescription">
+	Default python installation for lboulard
+	</Option>
+    <Option Name="AssociateFiles" Value="1" />
+ </Options>

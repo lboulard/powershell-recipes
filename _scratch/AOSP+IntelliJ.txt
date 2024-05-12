@@ -1,0 +1,5 @@
+### AOSP + IntelliJ
+
+https://stackoverflow.com/a/32566388 (idegen)
+
+https://stackoverflow.com/a/75687361 (AIDEfen) 2023

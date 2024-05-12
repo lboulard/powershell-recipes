@@ -1,0 +1,46 @@
+;
+; "CMD Prompt Here" PowerToy
+;
+; Copyright 1996 Microsoft Corporation
+;
+; Modified to launch VS.NET 2008 command prompt
+
+[version]
+signature="$CHICAGO$"
+
+[VSNet2008AdminCmdHereInstall]
+CopyFiles = VSNet2008AdminCmdHere.Files.Inf
+AddReg    = VSNet2008AdminCmdHere.Reg
+
+[DefaultInstall]
+CopyFiles = VSNet2008AdminCmdHere.Files.Inf
+AddReg    = VSNet2008AdminCmdHere.Reg
+
+[DefaultUnInstall]
+DelFiles  = VSNet2008AdminCmdHere.Files.Inf
+DelReg    = VSNet2008AdminCmdHere.Reg
+
+[SourceDisksNames]
+55="VS .NET 2008 CMD Prompt Here","",1
+
+[SourceDisksFiles]
+VSNet2008AdminCmdHere.INF=55
+
+[DestinationDirs]
+VSNet2008AdminCmdHere.Files.Inf = 17
+
+[VSNet2008AdminCmdHere.Files.Inf]
+VSNet2008AdminCmdHere.INF
+
+[VSNet2008AdminCmdHere.Reg]
+HKLM,%UDHERE%,DisplayName,,"%VSNet2008AdminCmdHereName%"
+HKLM,%UDHERE%,UninstallString,,"rundll32.exe syssetup.dll,SetupInfObjectInstallAction DefaultUninstall 132 %17%\VSNet2008AdminCmdHere.inf"
+HKCR,Directory\Shell\VSNet2008AdminCmdHere,,,"%VSNet2008AdminCmdHereAccel%"
+HKCR,Directory\Shell\VSNet2008AdminCmdHere\command,,,"runas /user:Administrator ""%11%\cmd.exe /k cd \""%1\"" && \""C:\Program Files\Microsoft Visual Studio 9.0\VC\vcvarsall.bat\"""""
+HKCR,Drive\Shell\VSNet2008AdminCmdHere,,,"%VSNet2008AdminCmdHereAccel%"
+HKCR,Drive\Shell\VSNet2008AdminCmdHere\command,,,"runas /user:Administrator ""%11%\cmd.exe /k cd \""%1\"" && \""C:\Program Files\Microsoft Visual Studio 9.0\VC\vcvarsall.bat\"""""
+
+[Strings]
+VSNet2008AdminCmdHereName="VS.NET 2008 Admin Command Prompt Here PowerToy"
+VSNet2008AdminCmdHereAccel="VS.NET 2008 &Admin CMD Prompt Here"
+UDHERE="Software\Microsoft\Windows\CurrentVersion\Uninstall\VSNet2008AdminCmdHere"

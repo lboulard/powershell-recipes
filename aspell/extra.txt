@@ -1,0 +1,7 @@
+enablement
+FSM
+iSIM
+iUICC
+iuicc
+uicc
+UICC

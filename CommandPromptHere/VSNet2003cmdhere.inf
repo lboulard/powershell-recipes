@@ -1,0 +1,46 @@
+;
+; "CMD Prompt Here" PowerToy
+;
+; Copyright 1996 Microsoft Corporation
+;
+; Modified to launch VS.NET 2003 command prompt 5/6/03 MG
+
+[version]
+signature="$CHICAGO$"
+
+[VSNet2003CmdHereInstall]
+CopyFiles = VSNet2003CmdHere.Files.Inf
+AddReg    = VSNet2003CmdHere.Reg
+
+[DefaultInstall]
+CopyFiles = VSNet2003CmdHere.Files.Inf
+AddReg    = VSNet2003CmdHere.Reg
+
+[DefaultUnInstall]
+DelFiles  = VSNet2003CmdHere.Files.Inf
+DelReg    = VSNet2003CmdHere.Reg
+
+[SourceDisksNames]
+55="VS .NET 2003 CMD Prompt Here","",1
+
+[SourceDisksFiles]
+VSNet2003CmdHere.INF=55
+
+[DestinationDirs]
+VSNet2003CmdHere.Files.Inf = 17
+
+[VSNet2003CmdHere.Files.Inf]
+VSNet2003CmdHere.INF
+
+[VSNet2003CmdHere.Reg]
+HKLM,%UDHERE%,DisplayName,,"%VSNet2003CmdHereName%"
+HKLM,%UDHERE%,UninstallString,,"rundll32.exe syssetup.dll,SetupInfObjectInstallAction DefaultUninstall 132 %17%\VSNet2003CmdHere.inf"
+HKCR,Directory\Shell\VSNet2003CmdHere,,,"%VSNet2003CmdHereAccel%"
+HKCR,Directory\Shell\VSNet2003CmdHere\command,,,"%11%\cmd.exe /k cd ""%1"" && ""C:\Program Files\Microsoft Visual Studio .NET 2003\Common7\Tools\vsvars32.bat"""
+HKCR,Drive\Shell\VSNet2003CmdHere,,,"%VSNet2003CmdHereAccel%"
+HKCR,Drive\Shell\VSNet2003CmdHere\command,,,"%11%\cmd.exe /k cd ""%1"" && ""C:\Program Files\Microsoft Visual Studio .NET 2003\Common7\Tools\vsvars32.bat"""
+
+[Strings]
+VSNet2003CmdHereName="VS.NET 2003 Command Prompt Here PowerToy"
+VSNet2003CmdHereAccel="VS.NET 200&3 CMD Prompt Here"
+UDHERE="Software\Microsoft\Windows\CurrentVersion\Uninstall\VSNet2003CmdHere"

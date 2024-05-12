@@ -1,0 +1,17 @@
+
+
+Fresh install:
+
+- Tick "Create .bat files"
+- Untick "Create icons for Vim/On the desktop"
+- Untick "Add Vim Context Menu"
+- Untick "Create Plugin Directories/Shared"
+- Untick "Native language support"
+
+System update:
+
+- System: EDITOR and GIT_EDITOR environment variable
+- Git: reinstall after modifying git-silent-install.inf
+- 7-Zip: menu Tools, Options, tab Editor.
+
+All file associations are lost in Explorer

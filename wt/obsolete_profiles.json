@@ -1,0 +1,264 @@
+
+// To view the default settings, hold "alt" while clicking on the "Settings" button.
+// For documentation on these settings, see: https://aka.ms/terminal-documentation
+
+{
+    "$schema": "https://aka.ms/terminal-profiles-schema",
+
+    "defaultProfile": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+
+    "copyOnSelect": true,
+    "initialCols": 160,
+    "initialRows": 50,
+    "launchMode": "default",
+    "snapToGridOnResize": true,
+    "profiles":
+    {
+        "defaults":
+        {
+            // Put settings here that you want to apply to all profiles
+            "fontFace": "Cascadia Code PL",
+            "fontSize": 10,
+            "useAcrylic": true,
+            "acrylicOpacity": 0.85,
+            "scrollbarState": "visible",
+            "startingDirectory": "%USERPROFILE%"
+        },
+        "list":
+        [
+            {
+                // Make changes here to the powershell.exe profile
+                "guid": "{61c54bbd-c2c6-5271-96e7-009a87ff44bf}",
+                "name": "Windows PowerShell",
+                "commandline": "powershell.exe",
+                "fontFace": "Consolas",
+                "fontSize": 11,
+                "hidden": false
+            },
+            {
+                // Make changes here to the cmd.exe profile
+                "guid": "{0caa0dad-35be-5f56-a8ff-afceeeaa6101}",
+                "name": "cmd",
+                "commandline": "cmd.exe",
+                "fontFace": "Consolas",
+                "fontSize": 12,
+                "experimental.retroTerminalEffect": true,
+                "hidden": false
+            },
+            {
+                "guid": "{2e8523ad-850f-414a-86af-2f3af72b1e0d}",
+                "name": "cmd — profile",
+                "commandline": "cmd.exe /k D:\\Programs\\bin\\profile.cmd",
+                //"icon": "ms-appx:///ProfileIcons/{0caa0dad-35be-5f56-a8ff-afceeeaa6101}.png",
+                "icon": "ms-appdata:///roaming/msterminal-32.png",
+                "fontFace": "Cascadia Code PL",
+                "colorScheme": "IR_Black",
+                "cursorShape": "filledBox",
+                "cursorColor": "#00A540",
+                "padding": "4",
+                "hidden": false
+            },
+            {
+                "guid": "{7d04ce37-c00f-43ac-ba47-992cb1393215}",
+                "closeOnExit": true,
+                "colorScheme": "Lovelace",
+                "commandline": "C:\\Programs\\Yori\\yori.exe",
+                "cursorColor": "#00FF00",
+                "cursorHeight": 25,
+                "cursorShape": "vintage",
+                "fontFace": "Cascadia Code PL",
+                "fontSize": 10,
+                "historySize": 9001,
+                "icon": "ms-appdata:///roaming/console-blue-32.png",
+                "name": "Yori is not DOS",
+                "padding": "2",
+                "tabTitle": "cmd, kinda"
+            },
+            {
+                "guid": "{f36ddd44-7155-40f2-a890-f74a341ca8c1}",
+                "colorScheme": "Monokai Soda",
+                "commandline": "\"%PROGRAMFILES%\\git\\usr\\bin\\bash.exe\" -i -l",
+                "cursorColor": "#FFFFFF",
+                "cursorShape": "bar",
+                "fontFace": "Cascadia Code PL",
+                "fontSize": 10,
+                "icon": "ms-appdata:///roaming/git-32.png",
+                "name": "Git Bash",
+                "padding": "2",
+                "startingDirectory": "%USERPROFILE%"
+            },
+            {
+                "guid": "{b453ae62-4e3d-5e58-b989-0a998ec441b8}",
+                "hidden": false,
+                "name": "Azure Cloud Shell",
+                "source": "Windows.Terminal.Azure"
+            }
+        ]
+    },
+
+    // Add custom color schemes to this array
+    "schemes": [
+        {
+            "name": "Molokai",
+            "black": "#121212",
+            "red": "#fa2573",
+            "green": "#98e123",
+            "yellow": "#dfd460",
+            "blue": "#1080d0",
+            "purple": "#8700ff",
+            "cyan": "#43a8d0",
+            "white": "#bbbbbb",
+            "brightBlack": "#555555",
+            "brightRed": "#f6669d",
+            "brightGreen": "#b1e05f",
+            "brightYellow": "#fff26d",
+            "brightBlue": "#00afff",
+            "brightPurple": "#af87ff",
+            "brightCyan": "#51ceff",
+            "brightWhite": "#ffffff",
+            "background": "#121212",
+            "foreground": "#bbbbbb"
+        },
+        {
+            "name": "Jellybeans",
+            "black": "#929292",
+            "red": "#e27373",
+            "green": "#94b979",
+            "yellow": "#ffba7b",
+            "blue": "#97bedc",
+            "purple": "#e1c0fa",
+            "cyan": "#00988e",
+            "white": "#dedede",
+            "brightBlack": "#bdbdbd",
+            "brightRed": "#ffa1a1",
+            "brightGreen": "#bddeab",
+            "brightYellow": "#ffdca0",
+            "brightBlue": "#b1d8f6",
+            "brightPurple": "#fbdaff",
+            "brightCyan": "#1ab2a8",
+            "brightWhite": "#ffffff",
+            "background": "#121212",
+            "foreground": "#dedede"
+        },
+        {
+            "name": "Lovelace",
+            "black": "#282a36",
+            "red": "#f37f97",
+            "green": "#5adecd",
+            "yellow": "#f2a272",
+            "blue": "#8897f4",
+            "purple": "#c574dd",
+            "cyan": "#79e6f3",
+            "white": "#fdfdfd",
+            "brightBlack": "#414458",
+            "brightRed": "#ff4971",
+            "brightGreen": "#18e3c8",
+            "brightYellow": "#ff8037",
+            "brightBlue": "#556fff",
+            "brightPurple": "#b043d1",
+            "brightCyan": "#3fdcee",
+            "brightWhite": "#bebec1",
+            "background": "#1d1f28",
+            "foreground": "#fdfdfd"
+        },
+        {
+            "name": "IR_Black",
+            "black": "#4f4f4f",
+            "red": "#fa6c60",
+            "green": "#a8ff60",
+            "yellow": "#fffeb7",
+            "blue": "#96cafe",
+            "purple": "#fa73fd",
+            "cyan": "#c6c5fe",
+            "white": "#efedef",
+            "brightBlack": "#7b7b7b",
+            "brightRed": "#fcb6b0",
+            "brightGreen": "#cfffab",
+            "brightYellow": "#ffffcc",
+            "brightBlue": "#b5dcff",
+            "brightPurple": "#fb9cfe",
+            "brightCyan": "#e0e0fe",
+            "brightWhite": "#ffffff",
+            "background": "#000000",
+            "foreground": "#f1f1f1"
+        },
+        {
+            "name": "Monokai Remastered",
+            "black": "#1a1a1a",
+            "red": "#f4005f",
+            "green": "#98e024",
+            "yellow": "#fd971f",
+            "blue": "#9d65ff",
+            "purple": "#f4005f",
+            "cyan": "#58d1eb",
+            "white": "#c4c5b5",
+            "brightBlack": "#625e4c",
+            "brightRed": "#f4005f",
+            "brightGreen": "#98e024",
+            "brightYellow": "#e0d561",
+            "brightBlue": "#9d65ff",
+            "brightPurple": "#f4005f",
+            "brightCyan": "#58d1eb",
+            "brightWhite": "#f6f6ef",
+            "background": "#0c0c0c",
+            "foreground": "#d9d9d9"
+        },
+        {
+            "name": "Monokai Soda",
+            "black": "#1a1a1a",
+            "red": "#f4005f",
+            "green": "#98e024",
+            "yellow": "#fa8419",
+            "blue": "#9d65ff",
+            "purple": "#f4005f",
+            "cyan": "#58d1eb",
+            "white": "#c4c5b5",
+            "brightBlack": "#625e4c",
+            "brightRed": "#f4005f",
+            "brightGreen": "#98e024",
+            "brightYellow": "#e0d561",
+            "brightBlue": "#9d65ff",
+            "brightPurple": "#f4005f",
+            "brightCyan": "#58d1eb",
+            "brightWhite": "#f6f6ef",
+            "background": "#1a1a1a",
+            "foreground": "#c4c5b5"
+        },
+        {
+            "name": "Monokai Vivid",
+            "black": "#121212",
+            "red": "#fa2934",
+            "green": "#98e123",
+            "yellow": "#fff30a",
+            "blue": "#0443ff",
+            "purple": "#f800f8",
+            "cyan": "#01b6ed",
+            "white": "#ffffff",
+            "brightBlack": "#838383",
+            "brightRed": "#f6669d",
+            "brightGreen": "#b1e05f",
+            "brightYellow": "#fff26d",
+            "brightBlue": "#0443ff",
+            "brightPurple": "#f200f6",
+            "brightCyan": "#51ceff",
+            "brightWhite": "#ffffff",
+            "background": "#121212",
+            "foreground": "#f9f9f9"
+        }
+    ],
+
+    // Add any keybinding overrides to this array.
+    // To unbind a default keybinding, set the command to "unbound"
+    "keybindings": [
+        {
+            "keys": [
+                "ctrl+shift+d"
+            ],
+            "command": {
+                "action": "splitPane",
+                "split": "auto",
+                "splitMode": "duplicate"
+            }
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+[Setup]
+DisableStartupPrompt=yes
+Lang=default
+Dir=C:\Program Files\Git
+Group=Git
+NoIcons=0
+SetupType=default
+Components=ext,ext\shellhere,ext\guihere,gitlfs,assoc,assoc_sh,consolefont
+Tasks=
+;EditorOption=NotepadPlusPlus
+EditorOption=CustomEditor
+CustomEditorPath=C:\lb\vim\vim91\gvim.exe -f -i NONE
+PathOption=Cmd
+SSHOption=OpenSSH
+CURLOption=WinSSL
+CRLFOption=CRLFAlways
+BashTerminalOption=MinTTY
+PerformanceTweaksFSCache=Enabled
+UseCredentialManager=Core
+EnableSymlinks=Enabled
+DefaultBranchOption=master
