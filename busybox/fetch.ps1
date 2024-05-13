@@ -17,9 +17,10 @@ $links = $html.Links
 $releases = $links.href | Where-Object {
   $_ -match $versionRegex
 } | Sort-Object -Descending -Property {
-  $_ -match $versionRegex
-  $parts = $Matches.version -split "-"
-  [int]$parts[0]
+  if ($_ -match $versionRegex) {
+    $parts = $Matches.version -split "-"
+    [int]$parts[0]
+  }
 }
 
 if (-not $releases) {
