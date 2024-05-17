@@ -56,23 +56,25 @@ $maintained = $releases | ForEach-Object {
 # last version is downloaded in current folder
 # other version are downloaded in "$version" folder
 
+$folders = @()
 $files = $maintained | ForEach-Object -Begin { $last = $null } {
   $dl = New-Object System.Uri -ArgumentList $url,$_.href
   if ((-not $last) -or ($last -eq $_.version)) {
     $last = $_.version
     "$dl#$($_.Release)"
   } else {
-    "$dl#$($_.Major).$($_.Minor)/$($_.Release)"
+    $branch = "$($_.Major).$($_.Minor)"
+    "$dl#$branch/$($_.Release)"
+    $folders += $branch
   }
 }
 
 # Create folders as needed
-$maintained | ForEach-Object {
-  "$($_.Major).$($_.Minor)"
-} | Sort-Object -Uniq | ForEach-Object {
+$folders | Sort-Object -Uniq | ForEach-Object {
   $folder = $_
   if (-not (Test-Path $folder -PathType Container)) {
-    New-Item -ItemType Directory -Path "$version" -Force | Out-Null
+    Write-Host "# New folder $folder"
+    New-Item -ItemType Directory -Path "$folder" -Force | Out-Null
   }
 }
 
@@ -93,7 +95,7 @@ $files | ForEach-Object {
     try {
       Write-Host "  -> $src"
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$repo/$_" -OutFile $tmpFile -UseBasicParsing -UserAgent $userAgent
+      Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
