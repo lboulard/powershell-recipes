@@ -7,24 +7,30 @@
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
 @IF %ERRORLEVEL% EQU 0 (
   @ECHO This script shall run as current user.
-  @SETG ERRORLEVEL=64
+  @CALL :errorlevel 128
   @GOTO :exit
 )
 
 @IF "%LBPROGRAMS%" == "" @(
   @ECHO ** ERROR, LBPROGRAMS envrironment variable not defined
-  @SETG ERRORLEVEL=64
+  @CALL :errorlevel 1
   @GOTO :exit
 )
 
+@SET VERSION=notfound
 @SET ARCHIVE=
-@FOR %%f IN ("dirx-*.zip") DO @SET "ARCHIVE=%%~nxf"
-@ECHO SET ARCHIVE=%ARCHIVE%
-@IF NOT DEFINED ARCHIVE (
-  @ECHO ** ERROR, dirx archive not found
-  @SET ERRORLEVEL=64
+@FOR %%f IN ("dirx-*.zip") DO @(
+  @FOR /F "tokens=2 delims=-" %%v IN ("%%f") DO @(
+    @FOR /F "tokens=1-3 delims=." %%i IN ("%%v") DO @CALL :version "%%i" "%%j" "%%k" "%%f"
+  )
+)
+@ECHO/VERSION=%VERSION%
+@IF %VERSION%==notfound @(
+  @ECHO ** ERROR, dirx not found
+  @SCALL :errorlevel 64
   @GOTO :exit
 )
+@ECHO/ARCHIVE=%ARCHIVE%
 
 @SET POWERSHELL=PowerShell.exe
 @where /q pwsh.exe
@@ -37,8 +43,25 @@
 @:: Pause if not interactive
 @:exit
 @SET ERR=%ERRORLEVEL%
-@SET ERRORLEVEL=0
+@TYPE NUL>NUL
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
 @ENDLOCAL&EXIT /B %ERR%
 
+:version
+@SET "X=000000000%~1"
+@SET "Y=000000000%~2"
+@SET "Z=000000000%~3"
+@SET "__VERSION=%X:~-8%.%Y:~-8%.%Z:~-8%"
+@IF %VERSION%==notfound GOTO :update
+@IF %__VERSION% GTR %_VERSION% @GOTO :update
+@GOTO :EOF
+
+:update
+@SET "_VERSION=%__VERSION%"
+@SET "VERSION=%~1.%~2.%~3"
+@SET "ARCHIVE=%~4"
+@GOTO :EOF
+
+:errorlevel
+@EXIT /B %~1
