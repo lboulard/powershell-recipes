@@ -25,12 +25,10 @@ aspell --lang=en create personal ./extra.pws <extra.txt
 @:: Pause if not interactive
 @:exit
 @SET ERR=%ERRORLEVEL%
-@IF DEFINED _ELEV GOTO :_elev
 @IF ERRORLEVEL 1 @ECHO Failure ERRORLEVEL=%ERRORLEVEL%
 @TYPE NUL>NUL
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
-@:_elev
 @ENDLOCAL&EXIT /B %ERR
 
 :errorlevel

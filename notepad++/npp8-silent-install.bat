@@ -56,11 +56,9 @@
 @:: Pause if not interactive
 @:exit
 @SET ERR=%ERRORLEVEL%
-@IF DEFINED _ELEV GOTO :_elev
 @type nul>nul
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
-@:_elev
 @ENDLOCAL&EXIT /B %ERR%
 
 @:version
