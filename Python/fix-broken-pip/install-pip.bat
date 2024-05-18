@@ -9,7 +9,7 @@ FOR /F "eol= delims=;" %%c IN ('py -3.12 -c "import os, sys; print(os.path.dirna
 @ECHO SET PYTHON_INSTALL=%PYTHON_INSTALL%
 @IF NOT DEFINED PYTHON_INSTALL @(
   ECHO ** ERROR: No Python 3.12 installation program found
-  SET ERRORLEVEL=64
+  CALL :errorlevel 64
   GOTO :exit
 )
 
@@ -39,3 +39,6 @@ python get-pip.py
 @IF NOT ERRORLEVEL 1 PAUSE
 @:_elev
 @ENDLOCAL&EXIT /B %ERR%
+
+:errorlevel
+@EXIT /B %~1

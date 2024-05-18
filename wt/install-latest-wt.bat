@@ -12,7 +12,7 @@ FOR %%f IN ("Microsoft.WindowsTerminal_*_8wekyb3d8bbwe.msixbundle") DO (
 
 ECHO/VERSION=%VERSION%
 IF %VERSION%==notfound (
- SET ERRORLEVEL=64
+ CALL :errorlevel 64
  GOTO :exit
 )
 ECHO/ARCHIVE=%ARCHIVE%
@@ -45,3 +45,6 @@ ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 IF NOT ERRORLEVEL 1 PAUSE
 ECHO ON
 @ENDLOCAL&EXIT /B %ERR%
+
+:errorlevel
+@EXIT /B %~1

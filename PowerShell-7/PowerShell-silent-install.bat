@@ -13,7 +13,7 @@ FOR %%f IN ("PowerShell-*.msi") DO (
 )
 ECHO/VERSION=%VERSION%
 IF %VERSION%==notfound (
-  SET ERRORLEVEL=128
+  CALL :errorlevel 128
   ECHO ** ERROR: No installation program found
   ECHO ON
   GOTO :exit
@@ -69,3 +69,6 @@ SET "_VERSION=%__VERSION%"
 SET "VERSION=%~1.%~2.%~3"
 SET "ARCHIVE=%~4"
 GOTO :EOF
+
+:errorlevel
+@EXIT /B %~1

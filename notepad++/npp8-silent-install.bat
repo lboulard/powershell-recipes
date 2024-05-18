@@ -21,7 +21,7 @@
 @ECHO/VERSION=%VERSION%
 @IF %VERSION%==notfound @(
   @ECHO ** ERROR: installer not found
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -42,14 +42,14 @@
 @FOR /F "usebackq tokens=2*" %%a IN (`reg query "%KEY%" /v UninstallString 2^>NUL ^| FINDSTR REG_SZ`) DO @SET "UNINSTALLER=%%~b"
 @IF "%UNINSTALLER%"=="notfound" @(
   @ECHO ** ERROR: uninstaller not found ^(is Notepad++ installed?^)
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
 ::FOR /F "usebackq tokens=2*" %a IN (`reg query "%KEY%" /v UninstallString 2^>NUL ^| FINDSTR REG_SZ`) DO @ECHO %b
 
 @ECHO/** WARNING not running `"%UNINSTALLER%" /S`
-@SET ERRORLEVEL=-1
+@CALL :errorlevel -1
 :: Uncomment next line to run uninstaller
 ::"%UNINSTALLER%" /S
 
@@ -77,3 +77,6 @@
 @SET "VERSION=%~1.%~2.%~3"
 @SET "INSTALLER=%~4"
 @GOTO :EOF
+
+:errorlevel
+@EXIT /B %~1

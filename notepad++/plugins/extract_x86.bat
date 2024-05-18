@@ -19,7 +19,7 @@
 )
 @IF "%TARGET%"=="" @(
   @ECHO/ ** ERROR DSpellCheck not found
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -27,7 +27,7 @@
 @CALL :extract "%TARGET%" "%DESTDIR%"
 @IF ERRORLEVEL 1 @(
   @ECHO ** FAILURE detected
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
  
@@ -41,7 +41,7 @@
 )
 @IF "%TARGET%"=="" @(
   @ECHO/ ** ERROR NppExec not found
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -49,18 +49,16 @@
 @CALL :extract "%TARGET%" "%DESTDIR%"
 @IF ERRORLEVEL 1 @(
   @ECHO ** FAILURE detected
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
- 
 
 
 :: Pause if not interactive
 @SET ERR=%ERRORLEVEL%
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
-@ENDLOCAL&SET ERRORLEVEL=%ERR%
-@GOTO :EOF
+@ENDLOCAL&EXIT /B %ERR%
 
 :install
 @SETLOCAL
@@ -100,3 +98,6 @@ xcopy /Z /H /J /Y /V /S "%~1" "%~2"
 @SET "VERSION=%~1.%~2.%~3"
 @SET "TARGET=%~4"
 @GOTO :EOF
+
+:errorlevel
+@EXIT /B %~1

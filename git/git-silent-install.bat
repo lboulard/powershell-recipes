@@ -13,7 +13,7 @@ FOR %%f IN ("Git-*-64-bit.exe") DO (
 ECHO/VERSION=%VERSION%
 IF %VERSION%==notfound (
  ECHO ** ERROR: No Git installation program found
- SET ERRORLEVEL=64
+ CALL :errorlevel 64
  GOTO :exit
 )
 ECHO/PRG=%PRG%
@@ -76,3 +76,6 @@ ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 IF NOT ERRORLEVEL 1 PAUSE
 ECHO ON
 @ENDLOCAL&EXIT /B %ERR%
+
+:errorlevel
+@EXIT /B %~1

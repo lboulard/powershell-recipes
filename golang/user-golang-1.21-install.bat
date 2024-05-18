@@ -8,7 +8,7 @@
 @ECHO SET NAME=%NAME%
 @IF NOT DEFINED NAME (
   @ECHO ** ERROR: go language installation program not found
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -17,7 +17,7 @@
 
 @IF "%LBHOME%"=="" @(
   @ECHO/** ERROR Missing LBHOME environment variable
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -63,3 +63,6 @@ COPY /Y "%DEST%\bin\go.exe" "%APPS%\go\bin\go%VERSION%.exe"
 @IF EXIST "%APPS%\go\bin\go%VERSION%.exe" DEL /S "%APPS%\go\bin\go%VERSION%.exe"
 @IF EXIST "%DEST%\." RD /Q /S "%DEST%
 @GOTO :EOF
+
+:errorlevel
+@EXIT /B %~1

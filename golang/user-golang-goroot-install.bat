@@ -8,13 +8,13 @@
 @ECHO SET NAME=%NAME%
 @IF NOT DEFINED NAME (
   @ECHO ** ERROR: go language installation program not found
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
 @IF "%LBHOME%"=="" @(
   @ECHO/** ERROR Missing LBHOME environment variable
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -50,3 +50,6 @@
 @:Uninstall
 @ECHO *ERROR not yet
 @GOTO :EOF
+
+:errorlevel
+@EXIT /B %~1

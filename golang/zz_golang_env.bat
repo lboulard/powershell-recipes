@@ -5,7 +5,7 @@
 
 @IF "%LBHOME%"=="" @(
   @ECHO/**ERROR Missing LBHOME environment variable
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -33,3 +33,6 @@ SETX GOENV   "%ROOT%\temp\go-env"
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
 @ENDLOCAL&EXIT /B %ERR%
+
+:errorlevel
+@EXIT /B %~1

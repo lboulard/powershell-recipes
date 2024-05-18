@@ -7,6 +7,7 @@
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
 @IF %ERRORLEVEL% EQU 0 (
   @ECHO This script shall run as current user.
+  @CALL :errorlevel 128
   @GOTO :exit
 )
 
@@ -64,10 +65,12 @@ MKLINK /H "%~1" "%~2"
 @IF EXIST "%~1\." @RD "%~1"
 @IF EXIST "%~1" @(
   @ECHO Refuse to delete file "%~1"
-  @SET ERRORLEVEL=128
+  @CALL :errorlevel 128
   @GOTO :EOF
 )
 MKLINK /J "%~dpf1" "%~dpf2"
 @IF ERRORLEVEL 1 @EXIT /B %ERRORLEVEL%
 @GOTO :EOF
 
+:errorlevel
+@EXIT /B %~1
