@@ -31,7 +31,7 @@ COPY /Y "out\aspell.exe" "%LBHOME%\Programs\bin\aspell.exe"
 @SET ERR=%ERRORLEVEL%
 @IF DEFINED _ELEV GOTO :_elev
 @IF ERRORLEVEL 1 @ECHO Failure ERRORLEVEL=%ERRORLEVEL%
-@SET ERRORLEVEL=0
+@TYPE NUL>NUL
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
 @:_elev

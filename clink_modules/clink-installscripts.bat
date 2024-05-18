@@ -9,7 +9,7 @@
   @ECHO This script shall run as current user.
   @GOTO :exit
 )
-@SET ERRORLEVEL=0
+@TYPE NUL>NUL
 
 @CALL :absolute "%~dp0..\clink"
 @PATH %RETVAL%;%PATH%
@@ -25,7 +25,7 @@ clink_x64.exe installscripts "%~dp0clink-fzf"
 @:exit
 @SET ERR=%ERRORLEVEL%
 @IF DEFINED _ELEV GOTO :_elev
-@SET ERRORLEVEL=0
+@TYPE NUL>NUL
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
 @:_elev
