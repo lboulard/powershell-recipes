@@ -11,12 +11,12 @@
   @GOTO :exit
 )
 
-
-@PATH C:\msys64\mingw64\bin;%PATH%
+:: 32bit mandatory for registry key path
+@PATH C:\msys64\mingw32\bin;%PATH%
 @IF NOT EXIST out\. @MD out
 
-gcc -Wall -O3 -DWINDOWS -DWIN32 -D_WIN32 -DUNICODE -D_UNICODE^
- -m64 -oout/aspell.exe aspell.c^
+gcc -Wall -Os -DWINDOWS -DWIN32 -D_WIN32 -DUNICODE -D_UNICODE^
+ -m32 -oout/aspell.exe aspell.c^
  -lShlwapi
 @IF ERRORLEVEL 1 GOTO :exit
 

@@ -12,7 +12,7 @@
 )
 
 
-uncrustify -c "%USERPROFILE%\vimfiles\uncrustify-0.66.cfg" --replace aspell.c
+uncrustify -c "%USERPROFILE%\vimfiles\uncrustify-0.70.cfg" --replace aspell.c
 
 
 @:: Pause if not interactive

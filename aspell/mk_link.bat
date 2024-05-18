@@ -12,6 +12,7 @@
 )
 
 
+@IF EXIST "%USERPROFILE%\.aspell.conf" @DEL "%USERPROFILE%\.aspell.conf"
 mklink "%USERPROFILE%\.aspell.conf" "%~dp0aspell.conf"
 
 
