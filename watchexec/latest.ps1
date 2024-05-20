@@ -26,6 +26,10 @@ if ($lastVersionURL) {
 $release = $Matches.release
 $version = $Matches.version
 
+$version="2.0.0"
+$release="v$version"
+Write-Host "::: Using $release, because recent build broken on windows"
+
 $repo = "https://github.com/$project/releases/download/$release"
 
 $files =,"watchexec-$version-x86_64-pc-windows-msvc.zip"
