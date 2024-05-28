@@ -6,6 +6,7 @@
 
 @SET "DSpellCheck_Archive=DSpellCheck_%ARCH%_*.zip"
 @SET "NppExec_Archive=NppExec_*_dll_PA.zip"
+@SET "NppEditorConfig_Archive=NppEditorConfig-*-%ARCH%.zip"
 
 @CALL :mkdir "%DESTDIR%"
 
@@ -31,7 +32,7 @@
   @GOTO :exit
 )
  
-:: NppExec x86 extraction (for Notepad++ 7.6+)
+:: NppExec extraction (for Notepad++ 7.6+)
 
 @SET VERSION=notfound
 @FOR %%f IN ("%NppExec_Archive%") DO @(
@@ -52,6 +53,29 @@
   @CALL :errorlevel 64
   @GOTO :exit
 )
+
+:: NppEditorConfig extraction
+
+@SET VERSION=notfound
+@FOR %%f IN ("%NppEditorConfig_Archive%") DO @(
+  FOR /F "tokens=2 delims=-" %%v IN ("%%f") DO @(
+    SET "_=%%v" & CALL :version "!_:~0,1!" "!_:~1,1!" "!_:~2,1!" "%%f"
+  )
+)
+@IF "%TARGET%"=="" @(
+  @ECHO/ ** ERROR NppEditorConfig not found
+  @CALL :errorlevel 64
+  @GOTO :exit
+)
+
+@ECHO.%TARGET% : %VERSION%
+@CALL :extract "%TARGET%" "%DESTDIR%"
+@IF ERRORLEVEL 1 @(
+  @ECHO ** FAILURE detected
+  @CALL :errorlevel 64
+  @GOTO :exit
+)
+
 
 
 :: Pause if not interactive

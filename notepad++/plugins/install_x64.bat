@@ -18,6 +18,7 @@
 @CALL :mkdir "%PLUGINS%"
 @CALL :install "%PLUGINS%\DSpellCheck" DSpellCheck.dll
 @CALL :install "%PLUGINS%\NppExec" NppExec\NppExec.dll
+@CALL :install "%PLUGINS%\NppEditorConfig" NppEditorConfig.dll
 @CALL :install "%PLUGINS%\doc" doc\
 
 @IF ERRORLEVEL 1 @ECHO ** FAILURE detected
