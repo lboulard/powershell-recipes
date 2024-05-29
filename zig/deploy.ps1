@@ -1,3 +1,8 @@
+param(
+  [Parameter(HelpMessage = "process development version, not stable version")]
+  [switch]$DevOnly = $false
+)
+
 $ErrorActionPreference = "Stop"
 
 $versionRegex = "^zig-windows-x86_64-(?<version>(?<branch>\d+\.\d+)(?:\.\d+){0,2})(?<dev>-dev.+\+[0-9a-f]+)?.*\.zip$"
@@ -14,9 +19,18 @@ if (-not (Test-Path $prefix -PathType Container)) {
   throw "${prefix}: directory not found"
 }
 
+if ($DevOnly) {
+  echo "# Doing only development version install"
+}
+
 # ordered by version string
 $folders = Get-ChildItem $root -Directory | Select-Object -ExpandProperty Name | Where-Object {
-  $_ -match $folderRegex
+  if ($_ -match $folderRegex) {
+    # only deploy dev in dev only mode, else, only non dev version only
+    $isDev = [boolean]$Matches.dev
+    # (-not ($DevOnly -or $isDev)) -or ($DevOnly -and $isDev)
+    if ($DevOnly) { $isDev } else { -not $isDev }
+  }
 } | Sort-Object -Unique -Descending -Property {
   if ($_ -match $folderRegex) {
     $version = $Matches.version

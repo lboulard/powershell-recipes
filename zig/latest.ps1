@@ -1,3 +1,8 @@
+param(
+  [Parameter(HelpMessage = "process development version, not stable version")]
+  [switch]$DevOnly = $false
+)
+
 $ErrorActionPreference = "Stop"
 
 $index = "https://ziglang.org/download/index.json"
@@ -18,17 +23,20 @@ $notes = @(
 
 $json = Invoke-RestMethod -Uri $index -UseBasicParsing
 
-$versions = $json | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object {
-  $_ -match $versionRegex
-} | Sort-Object -Unique -Descending -Property {
-  if ($_ -match $versionRegex) {
-    $Matches.version -as [version]
-  }
-}, { $_ }
+if ($DevOnly) {
+  $versions = $json | Get-Member -MemberType NoteProperty -Name "master" | Select-Object -ExpandProperty Name
+} else {
+  $versions = $json | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object {
+    $_ -match $versionRegex
+  } | Sort-Object -Unique -Descending -Property {
+    if ($_ -match $versionRegex) {
+      $Matches.version -as [version]
+    }
+  }, { $_ }
+}
 
-$dev = $json | Get-Member -MemberType NoteProperty -Name "master" | Select-Object -ExpandProperty Name
 
-if (-not $versions -and -not $dev) {
+if (-not $versions) {
   [Console]::Error.WriteLine($json)
   throw "no versions found"
 }
@@ -85,9 +93,6 @@ function GetForAllArchs ([string]$member) {
 # Only last version is maintained
 $shortcuts = @()
 $maintained = $versions | Select-Object -First 2 | ForEach-Object { GetForAllArchs $_ }
-if ($dev) {
-  $maintained += GetForAllArchs $dev
-}
 
 # Extract files to download (only latest maintained versions)
 # Each version is downloaded in "$version" folder
