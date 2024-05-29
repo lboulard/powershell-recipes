@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $versionRegex = "^zig-windows-x86_64-(?<version>(?<branch>\d+\.\d+)(?:\.\d+){0,2})(?<dev>-dev.+\+[0-9a-f]+)?.*\.zip$"
 
-$folderRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev)?$"
+$folderRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.(?<devNumber>\d+))?$"
 $lbPrograms = $Env:LBPROGRAMS
 $prefix = $lbPrograms
 $root = $PSScriptRoot
@@ -34,7 +34,7 @@ $folders = Get-ChildItem $root -Directory | Select-Object -ExpandProperty Name |
 } | Sort-Object -Unique -Descending -Property {
   if ($_ -match $folderRegex) {
     $version = $Matches.version
-    $version += if ($Matches.dev) { "" } else { ".0" }
+    $version += if ($Matches.dev) { "." + $Matches.devNumber } else { ".0" }
     $version = $version -as [version]
   }
   $version
@@ -121,7 +121,7 @@ if (-not $selected) {
 }
 
 
-$count = if ($selected[0].Name -match '-dev') { 3 } else { 2 }
+$count = if ($selected[0].Name -match '-dev') { 1 } else { 2 }
 $toDeploy = $selected | Select-Object -First $count
 
 # $toDeploy | Select-Object FullName

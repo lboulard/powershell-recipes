@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $index = "https://ziglang.org/download/index.json"
 
-$versionRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})$"
+$versionRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.\d+)?$"
 
 $archs = @(
   "x86_64-windows"
@@ -46,18 +46,20 @@ function GetForAllArchs ([string]$member) {
   if ($member -match $versionRegex) {
     $version = $Matches.version
     $v = [version]$version
+    $dev = $null
   } else {
     $version = $releases.version
     if ($version -match $versionRegex.Trim('$')) {
       $v = [version]$Matches.version
+      $dev = $Matches.dev
     } elseif (-not $version) {
       $version = "unknown"
     }
   }
   if ($v) {
     $branch = "$($v.Major).$($v.Minor)"
-    if ($version -match "-dev") {
-      $branch += "-dev"
+    if ($dev) {
+      $branch += $dev
     }
   } else {
     $branch = "unknown"
