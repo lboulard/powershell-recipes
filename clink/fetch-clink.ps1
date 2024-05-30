@@ -1,40 +1,119 @@
 $ErrorActionPreference = "Stop"
 
-$versionPattern = "/(?<tag>v(?<version>\d+\.\d+\.\d+))$"
+$versionPattern = "/(?<tag>v(?<version>\d+\.\d+(\.\d+){0,2}))$"
 $project = "chrisant996/clink"
 
-$feedURL = "https://github.com/$project/releases.atom"
-
-$atomFeed = Invoke-RestMethod -Uri $feedURL
-
-$lastVersionURL = $atomFeed.link.href | Where-Object {
-  $_ -match $versionPattern
-} | Sort-Object -Descending -Property {
-  if ($_ -match $versionPattern) {
-    $Matches.version -as [version]
+$lastReleaseURL = "https://github.com/$project/releases/latest"
+try {
+  $response = Invoke-WebRequest -Method Head -Uri $lastReleaseURL -ErrorAction Ignore
+  $statusCode = $response.StatusCode
+  Write-Verbose ("`$statusCode={0}" -f $statusCode)
+} catch {
+  Write-Verbose $_.Exception
+  $statusCode = $_.Exception.Response.StatusCode.value__
+}
+if ($statusCode -eq 302) {
+  $lastVersionURL = $response.Headers.Location
+} elseif ($statusCode -eq 200) {
+  if ($response.BaseResponse.ResponseUri -ne $null) {
+    # PS5.1
+    $lastVersionURL = $response.BaseResponse.ResponseUri.AbsoluteUri
+    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
+  } elseif ($response.BaseResponse.RequestMessage.RequestUri -ne $null) {
+    # PS7
+    $lastVersionURL = $response.BaseResponse.RequestMessage.RequestUri.AbsoluteUri
+    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
   }
-},{ $_ }
-
-if ($lastVersionURL -and (-not ($errors))) {
-  Write-Host "# last Version" $lastVersionURL -Separator "`n"
 } else {
-  throw "no release found at $feedURL"
+  Write-Error ("HTTP Response {0}: {1}" -f $statusCode, $response.StatusDescription)
+  throw ("unexpected response {0} for {1}" -f $statusCode, $lastReleaseURL)
 }
 
-($lastVersionURL[0] -match $versionPattern) | Out-Null
+if ($lastVersionURL) {
+  Write-Host "# last Version" $lastVersionURL -Separator "`n"
+} else {
+  throw "no release found at ${lastReleaseURL}"
+}
+
+($lastVersionURL -match $versionPattern) | Out-Null
 $tag = $Matches.tag
 $version = $Matches.version
+
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+
+public class CredentialManager {
+    [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
+    public static extern bool CredRead(string target, int type, int reservedFlag, out IntPtr credentialPtr);
+
+    [DllImport("advapi32", SetLastError = true)]
+    public static extern void CredFree(IntPtr cred);
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct CREDENTIAL {
+        public int Flags;
+        public int Type;
+        public IntPtr TargetName;
+        public IntPtr Comment;
+        public long LastWritten;
+        public int CredentialBlobSize;
+        public IntPtr CredentialBlob;
+        public int Persist;
+        public int AttributeCount;
+        public IntPtr Attributes;
+        public IntPtr TargetAlias;
+        public IntPtr UserName;
+    }
+
+    public static string GetCredential(string targetName) {
+        IntPtr credPtr;
+        if (CredRead(targetName, 1, 0, out credPtr)) {
+            var credential = (CREDENTIAL)Marshal.PtrToStructure(credPtr, typeof(CREDENTIAL));
+            string password = Marshal.PtrToStringUni(credential.CredentialBlob, credential.CredentialBlobSize / 2);
+            CredFree(credPtr);
+            return password;
+        } else {
+            throw new Exception("Failed to retrieve credential from Windows Credential Manager.");
+        }
+    }
+}
+"@
+
+# check API key exists with 'cmdkey.exe /list:git:https://github.com'
+
+function Get-GitHubToken {
+  param (
+    [string]$targetName = "git:https://github.com"
+  )
+
+  try {
+    $token = [CredentialManager]::GetCredential($targetName)
+    return $token
+  } catch {
+    Write-Error $_.Exception.Message
+    return $null
+  }
+}
 
 # filenames are not enough to find release files
 # use GitHub API
 
 $headers = @{
-  'Accept' = 'application/vnd.github+json';
+  'Accept'               = 'application/vnd.github+json'
   "X-GitHub-Api-Version" = "2022-11-28"
 }
-$token = $env:GITHUB_TOKEN
-if ($token) {
-  $headers['Authorization'] = 'Bearter ' + $token
+
+$githubToken = $env:GITHUB_TOKEN
+if (-not $githubToken) {
+  # Get the GitHub API token from Windows Credential for git
+  $githubToken = Get-GitHubToken
+  if ($githubToken) {
+    $headers['Authorization'] = 'Bearer ' + $githubToken
+  }
+} else {
+  $headers['Authorization'] = 'token ' + $githubToken
 }
 
 $wanted = "clink.$([regex]::escape($version))\.[0-9a-f]+.zip$"
@@ -44,8 +123,9 @@ try {
   $release = $json.Content | ConvertFrom-Json
   $files = $release.assets | ForEach-Object {
     $asset = $_
-    if ($asset.Name -match $wanted) {
-      "$($asset.url)#$($asset.name)"
+    $name = $asset.name
+    if ($name -match $wanted) {
+      "$($asset.browser_download_url)#${name}"
     }
   }
 } catch {
@@ -56,12 +136,12 @@ try {
 $headers['Accept'] = 'application/octet-stream'
 
 $files | ForEach-Object {
-  $parts = $_.Split('#',2)
-  $src = $parts[0]
-  if ($parts.Length -eq 2) {
-    $dest = $parts[1]
+  $url = [System.Uri]($_)
+  $src = $url.AbsoluteUri
+  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
+    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
   } else {
-    $dest = $parts[0]
+    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
   }
 
   Write-Host "# $dest"
