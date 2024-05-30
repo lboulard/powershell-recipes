@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $versionPattern = "/(?<tag>v(?<version>\d+\.\d+(\.\d+){0,2}))$"
-$project = "chrisant996/dirx"
+$project = "elixir-lang/elixir"
 
 $lastReleaseURL = "https://github.com/$project/releases/latest"
 try {
@@ -116,7 +116,7 @@ if (-not $githubToken) {
   $headers['Authorization'] = 'token ' + $githubToken
 }
 
-$wanted = "elixir-otp-(?:2[567])\.exe"
+$wanted = "elixir-otp-(?:2[67])\.exe"
 $wanted = "(${wanted})|(Docs\.zip)"
 $wanted = "^(${wanted})(\.sha256sum)?$"
 
