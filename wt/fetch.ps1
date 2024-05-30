@@ -3,29 +3,40 @@ $ErrorActionPreference = "Stop"
 $versionPattern = "/(?<release>v(?<version>\d+\.\d+(\.\d+)+))$"
 $project = "microsoft/terminal"
 
-$feedURL = "https://github.com/$project/releases.atom"
-
-$atomFeed = Invoke-RestMethod -Uri $feedURL
-$atomFeed = $atomFeed | Where-Object {
-  -not ($_.title -match " Preview")
+$lastReleaseURL = "https://github.com/$project/releases/latest"
+try {
+  $response = Invoke-WebRequest -Method Head -Uri $lastReleaseURL -ErrorAction Ignore
+  $statusCode = $response.StatusCode
+  Write-Verbose ("`$statusCode={0}" -f $statusCode)
+} catch {
+  Write-Verbose $_.Exception
+  $statusCode = $_.Exception.Response.StatusCode.value__
 }
-
-$lastVersionURL = $atomFeed.link.href | Where-Object {
-  $_ -match $versionPattern
-} | Sort-Object -Descending -Property {
-  if ($_ -match $versionPattern) {
-    $Matches.version -as [version]
+if ($statusCode -eq 302) {
+  $lastVersionURL = $response.Headers.Location
+} elseif ($statusCode -eq 200) {
+  if ($response.BaseResponse.ResponseUri -ne $null) {
+    # PS5.1
+    $lastVersionURL = $response.BaseResponse.ResponseUri.AbsoluteUri
+    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
+  } elseif ($response.BaseResponse.RequestMessage.RequestUri -ne $null) {
+    # PS7
+    $lastVersionURL = $response.BaseResponse.RequestMessage.RequestUri.AbsoluteUri
+    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
   }
-},{ $_ }
+} else {
+  Write-Error ("HTTP Response {0}: {1}" -f $statusCode, $response.StatusDescription)
+  throw ("unexpected response {0} for {1}" -f $statusCode, $lastReleaseURL)
+}
 
 if ($lastVersionURL) {
   Write-Host "# last Version" $lastVersionURL -Separator "`n"
 } else {
-  Write-Host "# last Version" $atomFeed.link.href -Separator "`n"
-  throw "no release found at $feedURL"
+  throw "no release found at ${lastReleaseURL}"
 }
 
-($lastVersionURL[0] -match $versionPattern) | Out-Null
+($lastVersionURL -match $versionPattern) | Out-Null
+$tag = $Matches.tag
 $release = $Matches.release
 $version = $Matches.version
 
