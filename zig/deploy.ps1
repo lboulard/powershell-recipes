@@ -162,7 +162,7 @@ try {
       }
 
       Write-Host ":: " -NoNewline
-      Write-Host "Expand $(relative $name) to $(relative $apps)\" -ForegroundColor Yellow
+      Write-Host "Expand $(relative $name) to ${apps}\" -ForegroundColor Yellow
       $installPath = Join-Path $workDir $basename
       if (Test-Path $installPath) {
         Remove-Item $installPath -Recurse -Force | Out-Null
@@ -176,7 +176,7 @@ try {
       }
     } else {
       Write-Host ":: " -NoNewline
-      Write-Host "${branch}: $name already found in $(relative $apps)\" -ForegroundColor Green
+      Write-Host "${branch}: $name already found in ${apps}\" -ForegroundColor Green
     }
 
     # always create symbolic links
@@ -191,7 +191,7 @@ try {
         Remove-Item $symlink -Force
       }
     } elseif (-not $mainSymlink) {
-      # only first non-dev versoin is main zig.exe in symlink
+      # only first non-dev version is main zig.exe in symlink
       $mainSymlink = Join-Path $bin "zig.exe"
       if (Test-Path $mainSymlink) {
         Remove-Item $mainSymlink -Force
