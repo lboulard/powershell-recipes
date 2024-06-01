@@ -33,18 +33,18 @@ if (-not $releases) {
 function DeGZip-File {
   param(
     $infile,
-    $outfile = ($infile -replace '\.gz$','')
+    $outfile = ($infile -replace '\.gz$', '')
   )
 
-  $input = New-Object System.IO.FileStream $inFile,([IO.FileMode]::Open),([IO.FileAccess]::Read),([IO.FileShare]::Read)
-  $output = New-Object System.IO.FileStream $outFile,([IO.FileMode]::Create),([IO.FileAccess]::Write),([IO.FileShare]::None)
-  $gzipStream = New-Object System.IO.Compression.GzipStream $input,([IO.Compression.CompressionMode]::Decompress)
+  $input = New-Object System.IO.FileStream $inFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)
+  $output = New-Object System.IO.FileStream $outFile, ([IO.FileMode]::Create), ([IO.FileAccess]::Write), ([IO.FileShare]::None)
+  $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
 
   $buffer = New-Object byte[] (1024)
   while ($true) {
-    $read = $gzipstream.Read($buffer,0,1024)
+    $read = $gzipstream.Read($buffer, 0, 1024)
     if ($read -le 0) { break }
-    $output.Write($buffer,0,$read)
+    $output.Write($buffer, 0, $read)
   }
 
   $gzipStream.Close()
@@ -73,7 +73,7 @@ if (-not (Test-Path $version -PathType Container)) {
 }
 
 $files | ForEach-Object {
-  $parts = $_.Split('#',2)
+  $parts = $_.Split('#', 2)
   $src = "$repo/" + $parts[0]
   if ($parts.Length -eq 2) {
     $dest = $parts[1]
@@ -95,7 +95,7 @@ $files | ForEach-Object {
   }
 
   if ($dest -match "\.gz$") {
-    $expanded = $dest -replace "\.gz$",""
+    $expanded = $dest -replace "\.gz$", ""
     Write-Host "# $expanded"
     if (-not (Test-Path $expanded)) {
       DeGZip-File "$dest"
@@ -103,13 +103,86 @@ $files | ForEach-Object {
   }
 }
 
-if (!$error) {
-  $links = (
-    ("busybox.exe","$version/busybox-w32-FRP-$version.exe"),
-    ("busybox64.exe","$version/busybox-w64u-FRP-$version.exe")
+# Support reading hardlinks on PS7+
+
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+
+public class FileLinkEnumerator
+{
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    public static extern IntPtr FindFirstFileNameW(string lpFileName, uint dwFlags, ref uint stringLength, StringBuilder linkName);
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool FindNextFileNameW(IntPtr hFindStream, ref uint stringLength, StringBuilder linkName);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool FindClose(IntPtr hFindStream);
+}
+"@
+
+function List-HardLinks {
+  param (
+    [string]$FilePath
   )
 
-  $brokenWarning = $false
+  $fileInfo = Get-Item -LiteralPath $FilePath
+  $fileName = $fileInfo.FullName
+  $links = @()
+
+  $stringLength = 260
+  $linkName = New-Object System.Text.StringBuilder -ArgumentList $stringLength
+  $handle = [FileLinkEnumerator]::FindFirstFileNameW($fileName, 0, [ref]$stringLength, $linkName)
+
+  if ($handle -eq [IntPtr]::Zero) {
+    throw "Failed to find first file name: $([ComponentModel.Win32Exception]::new([Runtime.InteropServices.Marshal]::GetLastWin32Error()).Message)"
+  }
+
+  $drive = $fileInfo.PSDrive.Root.TrimEnd('\')
+  try {
+    do {
+      $drive + $linkName.ToString()
+      $linkName = $linkName.Clear()
+      $stringLength = 260
+    } while ([FileLinkEnumerator]::FindNextFileNameW($handle, [ref]$stringLength, $linkName))
+  } finally {
+    [FileLinkEnumerator]::FindClose($handle) | Out-Null
+  }
+}
+
+function Get-HardLinks {
+  param (
+    [string]$FilePath
+  )
+  return @(List-HardLinks $FilePath)
+}
+
+function Find-HardLink {
+  param(
+    [string]$FilePath,
+    [string]$LinkPath
+  )
+
+  $fileInfo = Get-Item -LiteralPath $LinkPath
+  $fullName = $fileInfo.FullName
+  List-HardLinks $FilePath | ForEach-Object {
+    if ($fullName -eq $_) {
+      return $True
+    }
+  }
+  return $False
+}
+
+if (!$error) {
+  $links = (
+    ("busybox.exe", "$version/busybox-w32-FRP-$version.exe"),
+    ("busybox64.exe", "$version/busybox-w64u-FRP-$version.exe")
+  )
+
   $links | ForEach-Object {
     $link = $_[0]
     $path = $_[1]
@@ -117,13 +190,19 @@ if (!$error) {
       $l = (Get-Item -Path $link -Force -ea SilentlyContinue)
       if ($l.LinkType -eq "HardLink") {
         $p = (Get-Item -Path $path -Force -ea SilentlyContinue)
-        if ($l.Target -eq $p.FullName) {
+        $target = $l.Target
+        if (-not $target) {
+          # PS7+ does not read hardlinks by default
+          if (Find-HardLink $p.FullName $l.FullName) {
+            $target = $p.FullName
+          }
+        }
+        if ($target -eq $p.FullName) {
           Write-Host "hardlink: $link -> $path (no change)"
           return
-        } elseif ((-not $l.Target) -and (-not $brokenWarning)) {
-          Write-Error "hardlink support broken on PowerShell 6 and beyond"
-          Write-Error "always (re)creating hardlink"
-          $brokenWarning = $true
+        } else {
+          Write-Host "hardlink: $link -> unknown state (WARNING ignoring file)"
+          return
         }
       }
     }
@@ -137,4 +216,3 @@ if (!$error) {
     }
   }
 }
-
