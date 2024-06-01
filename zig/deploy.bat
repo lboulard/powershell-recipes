@@ -1,4 +1,5 @@
 @SETLOCAL
+@where /Q pwsh.exe
 @IF %ERRORLEVEL% EQU 0 (
   pwsh.exe -noprofile "%~dpn0.ps1"
 ) ELSE (

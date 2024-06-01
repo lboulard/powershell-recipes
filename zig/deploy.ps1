@@ -143,6 +143,34 @@ Write-Host "Will install:" (
 ) -ForegroundColor Yellow
 Write-Host
 
+function Create-Symboliclink {
+  param(
+    [string]$Path,
+    [string]$Value
+  )
+
+  $upToDate = $False
+  if (Test-Path $Path) {
+    # check is already defined
+    $fileInfo = Get-Item -Path $Path -ErrorAction SilentlyContinue
+    if ($fileInfo.LinkType -eq "SymbolicLink") {
+      $upToDate = ($fileInfo.LinkTarget -eq $Value)
+    }
+    if (-not $upToDate) {
+      Remove-Item $Path -Force | Out-Null
+    }
+  }
+
+  Write-Host ":: " -NoNewline
+  Write-Host "symLink $(relative $Path)' -> $(relative $Value)" -ForegroundColor Yellow -NoNewline
+  if (-not $upToDate) {
+    New-Item -Path $Path -ItemType symboliclink -Value $Value | Out-Null
+  } else {
+    Write-Host " (no change)" -ForegroundColor DarkYellow -NoNewLine
+  }
+  Write-Host
+}
+
 try {
   $toDeploy | ForEach-Object {
     $_.Name -match $versionRegex | Out-Null
@@ -179,43 +207,20 @@ try {
       Write-Host "${branch}: $name already found in ${apps}\" -ForegroundColor Green
     }
 
-    # always create symbolic links
-
-    $symlink = Join-Path $bin "zig-$branch.exe"
-    if (Test-Path $symlink) {
-      Remove-Item $symlink -Force
-    }
-    if ($isDev) {
-      $symlink = Join-Path $bin "zig-dev.exe"
-      if (Test-Path $symlink) {
-        Remove-Item $symlink -Force
-      }
-    } elseif (-not $mainSymlink) {
-      # only first non-dev version is main zig.exe in symlink
-      $mainSymlink = Join-Path $bin "zig.exe"
-      if (Test-Path $mainSymlink) {
-        Remove-Item $mainSymlink -Force
-      }
-    }
+    # create symbolic links
 
     $zigExe = Join-Path $dest 'zig.exe'
 
     $symlink = Join-Path $bin "zig-$branch.exe"
-    Write-Host ":: " -NoNewline
-    Write-Host "symLink $(relative $symlink) -> $(relative $zigExe)" -ForegroundColor Yellow
-    New-Item -Path $symlink -ItemType symboliclink -Value $zigExe | Out-Null
+    Create-SymbolicLink -Path $symlink -Value $zigExe
 
-    if ($name -match '-dev') {
+    if ($isDev) {
       $symlink = Join-Path $bin "zig-dev.exe"
-      Write-Host ":: " -NoNewline
-      Write-Host "symLink $(relative $symlink) -> $(relative $zigExe)" -ForegroundColor Yellow
-      New-Item -Path $symlink -ItemType symboliclink -Value $zigExe | Out-Null
-    }
-
-    if ($mainSymlink -and -not (Test-Path $mainSymlink)) {
-      Write-Host ":: " -NoNewline
-      Write-Host "symLink $(relative $mainSymlink)' -> $(relative $zigExe)" -ForegroundColor Yellow
-      New-Item -Path $mainSymlink -ItemType symboliclink -Value $zigExe | Out-Null
+      Create-SymbolicLink -Path $symlink -Value $zigExe
+    } elseif (-not $mainSymlink) {
+      # only first non-dev version is main zig.exe in symlink
+      $mainSymlink = Join-Path $bin "zig.exe"
+      Create-SymbolicLink -Path $mainSymlink -Value $zigExe
     }
   }
 } finally {
