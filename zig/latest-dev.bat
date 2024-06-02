@@ -1,5 +1,6 @@
 @SETLOCAL
 @SET "_N=%~n0"
+@where /q pwsh.exe
 @IF %ERRORLEVEL% EQU 0 (
   pwsh.exe -noprofile "%~dp0%_N:-dev=%.ps1" -DevOnly
 ) ELSE (
