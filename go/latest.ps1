@@ -19,7 +19,7 @@ $releases = $links.href | Where-Object {
   if ($_ -match $versionRegex) {
     $Matches.version -as [version]
   }
-},{ $_ }
+}, { $_ }
 
 if (-not $releases) {
   [Console]::Error.WriteLine(($links | Select-Object -ExpandProperty href) -join "`n")
@@ -37,18 +37,18 @@ $maintained = $releases | ForEach-Object {
   if ($_ -match $versionRegex) {
     $version = [version]$Matches.version
     [pscustomobject]@{
-      href = $_
+      href    = $_
       version = $version
-      Major = [int]$version.Major
-      Minor = [int]$version.Minor
+      Major   = [int]$version.Major
+      Minor   = [int]$version.Minor
       Release = $Matches.Release
     }
   }
 } | Group-Object {
-  "{0:d4}.{1:d4}" -f $_.Major,$_.Minor
-} | Sort -Descending Name | Select-Object -First 2 | ForEach-Object {
+  "{0:d4}.{1:d4}" -f $_.Major, $_.Minor
+} | sort -Descending Name | Select-Object -First 2 | ForEach-Object {
   $_.Group | Group-Object {
-    "{0:d4}.{1:d4}.{2:d4}" -f $_.Major,$_.Minor,$_.version.Build
+    "{0:d4}.{1:d4}.{2:d4}" -f $_.Major, $_.Minor, $_.version.Build
   } | Sort-Object -Descending Name | Select-Object -First 1
 } | Select-Object -ExpandProperty "Group"
 
@@ -57,7 +57,7 @@ $maintained = $releases | ForEach-Object {
 # other version are downloaded in "$version" folder
 
 $files = $maintained | ForEach-Object -Begin { $last = $null } {
-  $dl = New-Object System.Uri -ArgumentList $url,$_.href
+  $dl = New-Object System.Uri -ArgumentList $url, $_.href
   if ((-not $last) -or ($last -eq $_.version)) {
     $last = $_.version
     "$dl#$($_.Release)"
