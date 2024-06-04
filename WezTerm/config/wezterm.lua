@@ -26,6 +26,9 @@ config.adjust_window_size_when_changing_font_size = false
 
 -- Changing the color scheme:
 -- config.color_scheme = 'Ir Black (Gogh)'
+-- config.color_scheme = 'Nord (Gogh)'
+-- config.color_scheme = 'niji'
+-- config.color_scheme = 'Jellybeans (Gogh)'
 -- config.color_scheme = 'Monokai (terminal.sexy)'
 config.color_scheme = "Monokai Vivid"
 config.color_scheme = "Catppuccin Mocha"
@@ -114,7 +117,8 @@ config.ssh_domains = {
 
 -- Change default font for terminal display
 if false then
-	config.font = wezterm.font("JetBrains Mono", { weight = "Medium" })
+	-- config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
+	config.font = wezterm.font("Cascadia Mono PL", { weight = "Regular" })
 	config.font_size = 9.0
 else
 	config.font = wezterm.font("Iosevka Term", { weight = "Medium" })
@@ -208,6 +212,15 @@ config.mouse_bindings = {
 	},
 	-- NOTE that binding only the 'Up' event can give unexpected behaviors.
 	-- Read more below on the gotcha of binding an 'Up' event only.
+}
+
+-- add shortcut to rotate pan
+config.keys = {
+  {
+	  key = 'o',
+	  mods = 'CTRL|SHIFT|ALT',
+	  action = act.RotatePanes 'Clockwise'
+  },
 }
 
 -- and finally, return the configuration to wezterm
