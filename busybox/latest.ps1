@@ -67,26 +67,44 @@ $binaries = "^busybox-(w\d+u?)-FRP-$([regex]::escape($version))\.exe(\.sig)?$"
 $files = $releases | Where-Object { $_ -match $binaries }
 $files = $files | ForEach-Object { "$_#$version/$_" }
 $files += "busybox.1.gz#man1/busybox-$version.1.gz"
+$files = $files | ForEach-Object { "$repo/$_" }
 
-if (-not (Test-Path $version -PathType Container)) {
-  New-Item -ItemType Directory -Path "$version" -Force | Out-Null
-}
+# and download all
+
+$folders = @{}  # remember created folder to create only once
 
 $files | ForEach-Object {
-  $parts = $_.Split('#', 2)
-  $src = "$repo/" + $parts[0]
-  if ($parts.Length -eq 2) {
-    $dest = $parts[1]
+  $url = [System.Uri]($_)
+  $src = $url.AbsoluteUri
+  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
+    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
   } else {
-    $dest = $parts[0]
+    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
   }
 
   Write-Host "# $dest"
-
   if (-not (Test-Path $dest)) {
     try {
+      Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$repo/$_" -OutFile $tmpFile -UseBasicParsing -UserAgent $userAgent
+      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
+      $lastModified = $result.Headers['Last-Modified']
+      if ($lastModified) {
+        try {
+          $lastModifiedDate = Get-Date $lastModified[0]
+          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
+        } catch {
+          Write-Error "Error: $($_.Exception.Message)"
+          Write-Error "Date: $lastModified"
+        }
+      }
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
@@ -199,9 +217,6 @@ if (!$error) {
         }
         if ($target -eq $p.FullName) {
           Write-Host "hardlink: $link -> $path (no change)"
-          return
-        } else {
-          Write-Host "hardlink: $link -> unknown state (WARNING ignoring file)"
           return
         }
       }

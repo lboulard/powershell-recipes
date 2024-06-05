@@ -1,56 +1,99 @@
 $ErrorActionPreference = "Stop"
 
-$versionPattern = "/(?<release>v(?<version>\d+\.\d+\.\d+))$"
+$versionPattern = "/(?<tag>v(?<version>\d+\.\d+\.\d+))$"
 $project = "watchexec/watchexec"
 
-$feedURL = "https://github.com/$project/releases.atom"
 
-$atomFeed = Invoke-RestMethod -Uri $feedURL
-
-$lastVersionURL = $atomFeed.link.href | Where-Object {
-  $_ -match $versionPattern
-} | Sort-Object -Descending -Property {
-  if ($_ -match $versionPattern) {
-    $Matches.version -as [version]
+$lastReleaseURL = "https://github.com/$project/releases/latest"
+try {
+  $response = Invoke-WebRequest -Method Head -Uri $lastReleaseURL -ErrorAction Ignore
+  $statusCode = $response.StatusCode
+  Write-Verbose ("`$statusCode={0}" -f $statusCode)
+} catch {
+  Write-Verbose $_.Exception
+  $statusCode = $_.Exception.Response.StatusCode.value__
+}
+if ($statusCode -eq 302) {
+  $lastVersionURL = $response.Headers.Location
+} elseif ($statusCode -eq 200) {
+  if ($response.BaseResponse.ResponseUri -ne $null) {
+    # PS5.1
+    $lastVersionURL = $response.BaseResponse.ResponseUri.AbsoluteUri
+    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
+  } elseif ($response.BaseResponse.RequestMessage.RequestUri -ne $null) {
+    # PS7
+    $lastVersionURL = $response.BaseResponse.RequestMessage.RequestUri.AbsoluteUri
+    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
   }
-},{ $_ }
+} else {
+  Write-Error ("HTTP Response {0}: {1}" -f $statusCode, $response.StatusDescription)
+  throw ("unexpected response {0} for {1}" -f $statusCode, $lastReleaseURL)
+}
 
 if ($lastVersionURL) {
   Write-Host "# last Version" $lastVersionURL -Separator "`n"
 } else {
-  Write-Host "# last Version" $atomFeed.link.href -Separator "`n"
-  throw "no release found at $feedURL"
+  throw "no release found at ${lastReleaseURL}"
 }
 
-($lastVersionURL[0] -match $versionPattern) | Out-Null
-$release = $Matches.release
+($lastVersionURL -match $versionPattern) | Out-Null
+$tag = $Matches.tag
 $version = $Matches.version
 
-$version="2.0.0"
-$release="v$version"
-Write-Host "::: Using $release, because recent build broken on windows"
+$repo = "https://github.com/$project/releases/download/$tag"
 
-$repo = "https://github.com/$project/releases/download/$release"
+$files = @(
+  "watchexec-$version-x86_64-pc-windows-msvc.zip"
+  "watchexec-$version-x86_64-pc-windows-msvc.zip.sha256"
+  "watchexec-$version-x86_64-pc-windows-msvc.zip.b3"
+) | ForEach-Object { "$repo/$_#_broken_$_" }
 
-$files =,"watchexec-$version-x86_64-pc-windows-msvc.zip"
-$files += "watchexec-$version-x86_64-pc-windows-msvc.zip.sha256"
-$files += "watchexec-$version-x86_64-pc-windows-msvc.zip.b3"
+
+$goodVersion = "2.0.0"
+Write-Warning "`n::: Also using v$goodVersion, because v2.1.x builds` broken on windows`n"
+$files += @(
+  "watchexec-$goodVersion-x86_64-pc-windows-msvc.zip"
+  "watchexec-$goodVersion-x86_64-pc-windows-msvc.zip.sha256"
+  "watchexec-$goodVersion-x86_64-pc-windows-msvc.zip.b3"
+) | ForEach-Object { "https://github.com/$project/releases/download/v$goodVersion/$_" }
+
+
+# and download all
+
+$folders = @{}  # remember created folder to create only once
 
 $files | ForEach-Object {
-  $parts = $_.Split('#',2)
-  $src = "$repo/" + $parts[0]
-  if ($parts.Length -eq 2) {
-    $dest = $parts[1]
+  $url = [System.Uri]($_)
+  $src = $url.AbsoluteUri
+  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
+    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
   } else {
-    $dest = $parts[0]
+    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
   }
 
   Write-Host "# $dest"
   if (-not (Test-Path $dest)) {
     try {
       Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing
+      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
+      $lastModified = $result.Headers['Last-Modified']
+      if ($lastModified) {
+        try {
+          $lastModifiedDate = Get-Date $lastModified[0]
+          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
+        } catch {
+          Write-Error "Error: $($_.Exception.Message)"
+          Write-Error "Date: $lastModified"
+        }
+      }
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"

@@ -11,7 +11,7 @@ $releases = $links.href | Where-Object {
   if ($_ -match $versionPattern) {
     [int]$Matches.version
   }
-},{ $_ }
+}, { $_ }
 
 if (-not $releases) {
   [Console]::Error.WriteLine($releases -join "`n")
@@ -20,23 +20,49 @@ if (-not $releases) {
 
 $version = $matches.version
 
-$files =,"kate-master-$version-windows-cl-msvc2022-x86_64.exe"
-$files += "kate-master-$version-windows-cl-msvc2022-x86_64.exe.sha256"
-$files += "kate-master-$version-windows-cl-msvc2022-x86_64-sideload.appx"
-
 $nightly = "nightly-$version"
-New-Item -ItemType Directory -Path "$nightly" -Force | Out-Null
+$files = @(
+  "kate-master-$version-windows-cl-msvc2022-x86_64.exe"
+  "kate-master-$version-windows-cl-msvc2022-x86_64.exe.sha256"
+  "kate-master-$version-windows-cl-msvc2022-x86_64-sideload.appx"
+) | ForEach-Object { "${repo}/$_#${nightly}/$_" }
+
+# and download all
+
+$folders = @{}  # remember created folder to create only once
 
 $files | ForEach-Object {
-  $src = "$repo/$_"
-  $dest = "$nightly/$_"
+  $url = [System.Uri]($_)
+  $src = $url.AbsoluteUri
+  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
+    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
+  } else {
+    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
+  }
 
   Write-Host "# $dest"
   if (-not (Test-Path $dest)) {
     try {
       Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing
+      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
+      $lastModified = $result.Headers['Last-Modified']
+      if ($lastModified) {
+        try {
+          $lastModifiedDate = Get-Date $lastModified[0]
+          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
+        } catch {
+          Write-Error "Error: $($_.Exception.Message)"
+          Write-Error "Date: $lastModified"
+        }
+      }
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"

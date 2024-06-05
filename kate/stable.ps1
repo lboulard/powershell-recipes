@@ -13,7 +13,7 @@ $releases = $links.href | Where-Object {
   if ($_ -match $versionPattern) {
     [version]$Matches.version
   }
-},{ $_ }
+}, { $_ }
 
 if (-not $releases) {
   [Console]::Error.WriteLine($releases -join "`n")
@@ -35,18 +35,44 @@ $files = ($links | Where-Object { $_.href -match $installers }).href
 $revision = $Matches.revision
 $version = $Matches.version
 
-New-Item -ItemType Directory -Path "$version" -Force | Out-Null
+$files = $files | ForEach-Object { "${releaseURL}/$_#${version}/$_" }
+
+# and download all
+
+$folders = @{}  # remember created folder to create only once
 
 $files | ForEach-Object {
-  $src = "$releaseURL/$_"
-  $dest = "$version/$_"
+  $url = [System.Uri]($_)
+  $src = $url.AbsoluteUri
+  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
+    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
+  } else {
+    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
+  }
 
   Write-Host "# $dest"
   if (-not (Test-Path $dest)) {
     try {
       Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing
+      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
+      $lastModified = $result.Headers['Last-Modified']
+      if ($lastModified) {
+        try {
+          $lastModifiedDate = Get-Date $lastModified[0]
+          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
+        } catch {
+          Write-Error "Error: $($_.Exception.Message)"
+          Write-Error "Date: $lastModified"
+        }
+      }
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"

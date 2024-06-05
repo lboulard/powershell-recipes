@@ -1,53 +1,41 @@
+
 $ErrorActionPreference = "Stop"
 
-# Example: .../tag/20240203-110809-5046fc22
-$versionPattern = '/(?<tag>(?<version>\d{8}-\d+-[0-9a-f]+))$'
-$project = "wez/wezterm"
+$versionPattern = "/(?<tag>RubyInstaller-(?<revision>(?<version>(?<branch>3\.1)\.\d+)(\-\d+)?))$"
+$project = "oneclick/rubyinstaller2"
 
-$lastReleaseURL = "https://github.com/$project/releases/latest"
-try {
-  $response = Invoke-WebRequest -Method Head -Uri $lastReleaseURL -ErrorAction Ignore
-  $statusCode = $response.StatusCode
-  Write-Verbose ("`$statusCode={0}" -f $statusCode)
-} catch {
-  Write-Verbose $_.Exception
-  $statusCode = $_.Exception.Response.StatusCode.value__
-}
-if ($statusCode -eq 302) {
-  $lastVersionURL = $response.Headers.Location
-} elseif ($statusCode -eq 200) {
-  if ($response.BaseResponse.ResponseUri -ne $null) {
-    # PS5.1
-    $lastVersionURL = $response.BaseResponse.ResponseUri.AbsoluteUri
-    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
-  } elseif ($response.BaseResponse.RequestMessage.RequestUri -ne $null) {
-    # PS7
-    $lastVersionURL = $response.BaseResponse.RequestMessage.RequestUri.AbsoluteUri
-    Write-Verbose ("`$lastVersionURL={0}" -f $lastVersionURL)
-  }
-} else {
-  Write-Error ("HTTP Response {0}: {1}" -f $statusCode, $response.StatusDescription)
-  throw ("unexpected response {0} for {1}" -f $statusCode, $lastReleaseURL)
-}
+$feedURL = "https://github.com/$project/releases.atom"
+
+$atomFeed = Invoke-RestMethod -Uri $feedURL
+
+$lastVersionURL = $atomFeed.link.href | Where-Object {
+  $_ -match $versionPattern
+} | Sort-Object -Descending -Property {
+  $_ -match $versionPattern | Out-Null
+  $Matches.version -as [version]
+},{ $_ }
 
 if ($lastVersionURL) {
   Write-Host "# last Version" $lastVersionURL -Separator "`n"
 } else {
-  throw "no release found at ${lastReleaseURL}"
+  Write-Host "# last Version" $atomFeed.link.href -Separator "`n"
+  throw "no release found at $feedURL"
 }
 
-($lastVersionURL -match $versionPattern) | Out-Null
+($lastVersionURL[0] -match $versionPattern) | Out-Null
 $tag = $Matches.tag
+$branch = $Matches.branch
 $version = $Matches.version
+$revision = $Matches.revision
 
 $repo = "https://github.com/$project/releases/download/$tag"
 
 $files = @(
-  "WezTerm-windows-$version.zip"
-  "WezTerm-windows-$version.zip.sha256"
-  "WezTerm-$version-setup.exe"
-  "WezTerm-$version-setup.exe.sha256"
-) | ForEach-Object { "$repo/$_" }
+  "rubyinstaller-$revision-x64.exe"
+  "rubyinstaller-$revision-x64.exe.asc"
+  "rubyinstaller-$revision-x64.7z"
+  "rubyinstaller-$revision-x64.7z.asc"
+) | ForEach-Object { "${repo}/$_#${branch}/$_" }
 
 # and download all
 

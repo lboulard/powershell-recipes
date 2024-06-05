@@ -1,4 +1,4 @@
-﻿# Find latest release of Windows Python installer for a version
+# Find latest release of Windows Python installer for a version
 
 param(
   [Parameter(Mandatory = $true)]
@@ -25,10 +25,10 @@ function Get-HTML {
     $html = New-Object -Com "HTMLFile"
     if ($html) {
       $response = Invoke-WebRequest -Uri $Uri -UseBasicParsing `
-         -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+        -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
       if ($html | Get-Member -Name "IHTMLDocument2_write" -Type Method) {
         # PowerShell 5.1
-        $html.IHTMLDocument2_write($response.Content);
+        $html.IHTMLDocument2_write($response.Content)
       } else {
         $html.write([ref]$response.Content)
       }
@@ -51,7 +51,7 @@ $pathnames = $html.links | ForEach-Object {
 } | Sort-Object -Descending -Property {
   $_ -match $branchRegex
   $Matches.version -as [version]
-},{ $_ }
+}, { $_ }
 
 $links = @()
 $pathnames | ForEach-Object {
@@ -68,13 +68,13 @@ $pathnames | ForEach-Object {
 $links = $links | ForEach-Object {
   if ($_ -match $versionPattern) {
     [pscustomobject]@{
-      Link = $_
+      Link    = $_
       version = [version]$Matches.version
-      Pre = if ($Matches.dev) { $Matches.Pre } else { "zz" } # "~" does not work, why?
-      Rev = [int]$Matches.Rev
+      Pre     = if ($Matches.dev) { $Matches.Pre } else { "zz" } # "~" does not work, why?
+      Rev     = [int]$Matches.Rev
     }
   }
-} | Sort-Object -Descending Version,Pre,Rev | ForEach-Object Link
+} | Sort-Object -Descending Version, Pre, Rev | ForEach-Object Link
 
 if ($links) {
   $links[0] -match $versionPattern | Out-Null
@@ -87,29 +87,64 @@ if ($links) {
 Write-Host "# last Version $lastVersion"
 
 if ($mainVersion -le [version]"3.0.0") {
-  $files =,"python-$lastVersion.amd64.msi"
-  $files += "python-$lastVersion.amd64.msi.asc"
+  $files = @(
+    "python-$lastVersion.amd64.msi"
+    "python-$lastVersion.amd64.msi.asc"
+  )
 } else {
-  $files =,"python-$lastVersion-amd64.exe"
-  $files += "python-$lastVersion-amd64.exe.asc"
+  $files = @(
+    "python-$lastVersion-amd64.exe"
+    "python-$lastVersion-amd64.exe.asc"
+  )
 }
 if ($mainVersion -ge [version]"3.10.0") {
-  $files += "python-$lastVersion-amd64.exe.crt"
-  $files += "python-$lastVersion-amd64.exe.sig"
+  $files += @(
+    "python-$lastVersion-amd64.exe.crt"
+    "python-$lastVersion-amd64.exe.sig"
+  )
 }
 if ($mainVersion -gt [version]"3.10.9") {
   $files += "python-$lastVersion-amd64.exe.sigstore"
 }
 
+$files = $files | ForEach-Object { $pythonFTP + $mainVersion + "/" + $_ }
+
+# and download all
+
+$folders = @{}  # remember created folder to create only once
+
 $files | ForEach-Object {
-  $src = $pythonFTP + $mainVersion + "/" + $_
-  $dest = $_
+  $url = [System.Uri]($_)
+  $src = $url.AbsoluteUri
+  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
+    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
+  } else {
+    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
+  }
+
   Write-Host "# $dest"
   if (-not (Test-Path $dest)) {
     try {
       Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing
+      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
+      $lastModified = $result.Headers['Last-Modified']
+      if ($lastModified) {
+        try {
+          $lastModifiedDate = Get-Date $lastModified[0]
+          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
+        } catch {
+          Write-Error "Error: $($_.Exception.Message)"
+          Write-Error "Date: $lastModified"
+        }
+      }
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"

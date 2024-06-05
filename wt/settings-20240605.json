@@ -142,7 +142,7 @@
                 "altGrAliasing": false,
                 "closeOnExit": "graceful",
                 "colorScheme": "Lovelace",
-                "commandline": "%SCOOP%\\apps\\Yori\\current\\yori.exe",
+                "commandline": "C:\\lb\\SCoop\\apps\\Yori\\current\\yori.exe",
                 "cursorColor": "#00FF00",
                 "cursorHeight": 25,
                 "cursorShape": "vintage",

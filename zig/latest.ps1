@@ -99,7 +99,6 @@ $maintained = $versions | Select-Object -First 2 | ForEach-Object { GetForAllArc
 # Extract files to download (only latest maintained versions)
 # Each version is downloaded in "$version" folder
 
-$folders = @()
 $files = $maintained | ForEach-Object {
   $release = $_
   $dl = New-Object System.Uri -ArgumentList @($release.href)
@@ -108,7 +107,6 @@ $files = $maintained | ForEach-Object {
     throw "${_.href} does not contains a filename"
   }
   $branch = $release.Branch
-  $folders += $branch
   [pscustomobject]@{
     href   = "$dl#${branch}/${name}"
     Sha256 = $release.Sha256
@@ -116,14 +114,6 @@ $files = $maintained | ForEach-Object {
   }
 }
 
-# Create folders as needed
-$folders | Sort-Object -Uniq | ForEach-Object {
-  $folder = $_
-  if (-not (Test-Path $folder -PathType Container)) {
-    Write-Host "# New folder $folder"
-    New-Item -ItemType Directory -Path "$folder" -Force | Out-Null
-  }
-}
 
 # and download all
 
@@ -174,6 +164,8 @@ function Verify-Checksum {
   return $false
 }
 
+$folders = @{}  # remember created folder to create only once
+
 $files | ForEach-Object {
   $parts = $_.href.Split('#', 2)
   $src = $parts[0]
@@ -194,6 +186,13 @@ $files | ForEach-Object {
   if (-not (Test-Path $dest)) {
     try {
       Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
       $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
       $lastModified = $result.Headers['Last-Modified']

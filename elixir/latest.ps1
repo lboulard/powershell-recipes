@@ -136,7 +136,11 @@ try {
   break
 }
 
+# and download all
+
 $headers['Accept'] = 'application/octet-stream'
+
+$folders = @{}  # remember created folder to create only once
 
 $files | ForEach-Object {
   $url = [System.Uri]($_)
@@ -151,8 +155,25 @@ $files | ForEach-Object {
   if (-not (Test-Path $dest)) {
     try {
       Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -Headers $headers -UseBasicParsing
+      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -Headers $headers -UseBasicParsing -PassThru
+      $lastModified = $result.Headers['Last-Modified']
+      if ($lastModified) {
+        try {
+          $lastModifiedDate = Get-Date $lastModified[0]
+          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
+        } catch {
+          Write-Error "Error: $($_.Exception.Message)"
+          Write-Error "Date: $lastModified"
+        }
+      }
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"

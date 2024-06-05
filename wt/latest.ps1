@@ -42,24 +42,47 @@ $version = $Matches.version
 
 $repo = "https://github.com/$project/releases/download/$release"
 
-$files =,"Microsoft.WindowsTerminal_$($version)_8wekyb3d8bbwe.msixbundle"
-$files += "Microsoft.WindowsTerminal_$($version)_x64.zip"
+$files = @(
+  "Microsoft.WindowsTerminal_$($version)_8wekyb3d8bbwe.msixbundle"
+  "Microsoft.WindowsTerminal_$($version)_x64.zip"
+) | ForEach-Object { "$repo/$_" }
+
+# and download all
+
+$folders = @{}  # remember created folder to create only once
 
 $files | ForEach-Object {
-  $parts = $_.Split('#',2)
-  $src = "$repo/" + $parts[0]
-  if ($parts.Length -eq 2) {
-    $dest = $parts[1]
+  $url = [System.Uri]($_)
+  $src = $url.AbsoluteUri
+  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
+    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
   } else {
-    $dest = $parts[0]
+    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
   }
 
   Write-Host "# $dest"
   if (-not (Test-Path $dest)) {
     try {
       Write-Host "  -> $src"
+      $parent = Split-Path -Parent -Path $dest
+      if ($parent -and -not $folders.Contains($parent)) {
+        if (-not (Test-Path $parent -PathType Container)) {
+          New-Item -Path $parent -ItemType Container | Out-Null
+        }
+        $folders.Add($parent, $True)
+      }
       $tmpFile = "$dest.tmp"
-      Invoke-WebRequest -Uri "$src" -OutFile $tmpFile
+      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
+      $lastModified = $result.Headers['Last-Modified']
+      if ($lastModified) {
+        try {
+          $lastModifiedDate = Get-Date $lastModified[0]
+          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
+        } catch {
+          Write-Error "Error: $($_.Exception.Message)"
+          Write-Error "Date: $lastModified"
+        }
+      }
       Move-Item -Path $tmpFile -Destination "$dest"
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
