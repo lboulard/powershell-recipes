@@ -1,11 +1,13 @@
 @SETLOCAL
 @CHCP 65001 >NUL
-@REM file name shall be RubyXY-silent-install{-default}
+@CD /D "%~dp0"
 
+@REM file name shall be RubyXY-silent-install{-default}
 @SET "MYSELF=%~n0"
 @SET "MAJOR=%MYSELF:~4,1%"
 @SET "MINOR=%MYSELF:~5,1%"
 @SET "BRANCH=%MAJOR%.%MINOR%"
+@SET "RBVER=Ruby%MAJOR%%MINOR%"
 
 @SET "TASKS=nomodpath,noassocfiles"
 @IF NOT "%MYSELF:-default=%" == "%MYSELF%" (
@@ -13,7 +15,18 @@
 )
 @SET "TASKS=%TASKS%,noridkinstall,defaultutf8"
 
-@CD /D "%~dp0%BRANCH%"
+@IF EXIST ".\Ruby-install-config.bat" @CALL ".\Ruby-install-config.bat"
+@IF "%DESTDIR%"=="" (
+  @IF DEFINED LBHOME (
+    @SET "DESTDIR=%LBHOME%"
+  ) ELSE (
+    @SET "DESTDIR=%USERPROFILE%"
+  )
+)
+@CALL :expand "%DESTDIR%\%RBVER%-x64"
+@SET "DESTDIR=%RETVAL%"
+
+@CD /D ".\%BRANCH%"
 @IF ERRORLEVEL 1 GOTO :exit
 
 :: check if not admin
@@ -38,16 +51,11 @@
  MD "%LOCALAPPDATA%\lboulard\logs"
 @::IF ERRORLEVEL 1 GOTO :exit
 
-@SET "RBVER=Ruby%MAJOR%%MINOR%"
-@SET "DEST=%LBHOME%\%RBVER%-x64"
-@CALL :expand "%DEST%"
-@SET "DEST=%RETVAL%"
-
 ".\%RBINST%" /SILENT /CURRENTUSER ^
  /TASKS="%TASKS%"^
  /LOG="%LOCALAPPDATA%\lboulard\logs\%RBVER%-Install.log"^
  /COMPONENTS=ruby,rdoc^
- /DIR="%DEST%"
+ /DIR="%DESTDIR%"
 
 
 @:: Pause if not interactive

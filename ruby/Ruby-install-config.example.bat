@@ -1,0 +1,1 @@
+@SET "DESTDIR=D:\Apps"
