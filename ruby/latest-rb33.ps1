@@ -8,9 +8,14 @@ $VerbosePreference = "Continue"
 
 $branch = "3.3"
 
-$tagPattern = "(?<tag>RubyInstaller-(?<revision>(?<version>(?<branch>$([regex]::escape($branch)))\.\d+)(\-\d+)?))$"
+$tagPattern = "RubyInstaller-(?<version>$([regex]::escape($branch))\.\d+)(\-\d+)?$"
 $wanted = "^rubyinstaller-$([regex]::escape($branch))\.\d+.+?-x64\.(exe|7z)(\.asc)?$"
 $project = "oneclick/rubyinstaller2"
+
+$nameMangle = {
+  # manipulate $name, $version and $tag are accessible from tag pattern parsing
+  "${branch}/${name}"
+}
 
 Add-Type -TypeDefinition @"
 using System;
@@ -196,28 +201,27 @@ while ($url -and ($pagesCount -lt $maxPages)) {
     $next = if ($link) { $link.next }
 
     $releases = ($result.Content | ConvertFrom-Json) | where {
+      Write-Verbose "release: $($_.tag_name)"
       (-not $_.prerelease) -and ($_.tag_name -match $tagPattern)
-    }
-    if ($releases) {
-      $releases | ForEach-Object {
-        $release = $_
+    } | ForEach-Object {
+      $release = $_
 
-        $release.tag_name -match $tagPattern | Out-Null
-        $tag = $Matches.tag
-        $revision = $Matches.revision
-        $branch = $Matches.branch
-        $version = $Matches.version
+      $release.tag_name -match $tagPattern | Out-Null
+      $tag = $Matches.0
+      $version = $Matches.version
 
-        $files = $release.assets | ForEach-Object {
-          $asset = $_
-          $name = $asset.name
-          if ($name -match $wanted) {
-            "$($asset.browser_download_url)#${branch}/${name}"
+      $files = $release.assets | ForEach-Object {
+        $asset = $_
+        $name = $asset.name
+        if ($name -match $wanted) {
+          if ($nameMangle) {
+            $name = & $nameMangle
           }
+          "$($asset.browser_download_url)#${name}"
         }
-        if ($files) {
-          break
-        }
+      }
+      if ($files) {
+        break
       }
     }
     if ($files) {
@@ -284,4 +288,3 @@ $files | ForEach-Object {
     }
   }
 }
-
