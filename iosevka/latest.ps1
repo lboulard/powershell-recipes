@@ -44,9 +44,9 @@ $repo = "https://github.com/$project/releases/download/$tag"
 
 # only fetch a subset of all fonts available (ttf, ttf-fixed, ttf-term, ttc)
 $files = @(
-  "PkgTTF-Iosevka-$release.zip",
-  "PkgTTF-IosevkaFixed-$release.zip",
-  "PkgTTF-IosevkaTerm-$release.zip",
+  "PkgTTF-Iosevka-$release.zip"
+  "PkgTTF-IosevkaFixed-$release.zip"
+  "PkgTTF-IosevkaTerm-$release.zip"
   "SuperTTC-Iosevka-$release.zip"
 ) | ForEach-Object { "$repo/$_" }
 
