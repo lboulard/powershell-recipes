@@ -77,9 +77,11 @@ $files | ForEach-Object {
       $tmpFile = "$dest.tmp"
       $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
       $lastModified = $result.Headers['Last-Modified']
+      # PS7 returns array, PS5 returns string
+      if ($lastModified -is [array]) { $lastModified = $lastModified[0] }
       if ($lastModified) {
         try {
-          $lastModifiedDate = Get-Date $lastModified[0]
+          $lastModifiedDate = Get-Date $lastModified
           (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
         } catch {
           Write-Error "Error: $($_.Exception.Message)"
