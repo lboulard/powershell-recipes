@@ -1,5 +1,10 @@
 $ErrorActionPreference = "Stop"
 
+# https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
+# $VerbosePreference = "Continue"
+
+Import-Module lboulard-Recipes
+
 $repo = "https://erlang.org/download/otp_versions_tree_app_vsns.html"
 
 # https://github.com/erlang/otp/releases/download/OTP-27.0/otp_win64_27.0.exe
@@ -53,7 +58,7 @@ $maintained = $releases | ForEach-Object {
   }
 } | Group-Object {
   "{0:d4}.{1:d4}" -f $_.Major, $_.Minor
-} | sort -Descending Name | Select-Object -First 2 | ForEach-Object {
+} | Sort-Object -Descending Name | Select-Object -First 2 | ForEach-Object {
   $_.Group | Group-Object {
     "{0:d4}.{1:d4}.{2:d4}" -f $_.Major, $_.Minor, $_.Build
   } | Sort-Object -Descending Name | Select-Object -First 1
@@ -74,48 +79,6 @@ $files = $maintained | ForEach-Object -Begin { $last = $null } {
   }
 }
 
-# and download all
-
-$folders = @{}  # remember created folder to create only once
-
-$files | ForEach-Object {
-  $url = [System.Uri]($_)
-  $src = $url.AbsoluteUri
-  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
-    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
-  } else {
-    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
-  }
-
-  Write-Host "# $dest"
-  if (-not (Test-Path $dest)) {
-    try {
-      Write-Host "  -> $src"
-      $parent = Split-Path -Parent -Path $dest
-      if ($parent -and -not $folders.Contains($parent)) {
-        if (-not (Test-Path $parent -PathType Container)) {
-          New-Item -Path $parent -ItemType Container | Out-Null
-        }
-        $folders.Add($parent, $True)
-      }
-      $tmpFile = "$dest.tmp"
-      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
-      $lastModified = $result.Headers['Last-Modified']
-      # PS7 returns array, PS5 returns string
-      if ($lastModified -is [array]) { $lastModified = $lastModified[0] }
-      if ($lastModified) {
-        try {
-          $lastModifiedDate = Get-Date $lastModified
-          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
-        } catch {
-          Write-Error "Error: $($_.Exception.Message)"
-          Write-Error "Date: $lastModified"
-        }
-      }
-      Move-Item -Path $tmpFile -Destination "$dest"
-    } catch {
-      Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
-      break
-    }
-  }
+if ($files) {
+  Get-Url $files
 }

@@ -1,5 +1,8 @@
 # Find latest release of Windows Python installer for a version
 
+# https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
+# $VerbosePreference = "Continue"
+
 param(
   [Parameter(Mandatory = $true)]
   [string]$Version,
@@ -107,50 +110,7 @@ if ($mainVersion -gt [version]"3.10.9") {
   $files += "python-$lastVersion-amd64.exe.sigstore"
 }
 
-$files = $files | ForEach-Object { $pythonFTP + $mainVersion + "/" + $_ }
-
-# and download all
-
-$folders = @{}  # remember created folder to create only once
-
-$files | ForEach-Object {
-  $url = [System.Uri]($_)
-  $src = $url.AbsoluteUri
-  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
-    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
-  } else {
-    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
-  }
-
-  Write-Host "# $dest"
-  if (-not (Test-Path $dest)) {
-    try {
-      Write-Host "  -> $src"
-      $parent = Split-Path -Parent -Path $dest
-      if ($parent -and -not $folders.Contains($parent)) {
-        if (-not (Test-Path $parent -PathType Container)) {
-          New-Item -Path $parent -ItemType Container | Out-Null
-        }
-        $folders.Add($parent, $True)
-      }
-      $tmpFile = "$dest.tmp"
-      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
-      $lastModified = $result.Headers['Last-Modified']
-      # PS7 returns array, PS5 returns string
-      if ($lastModified -is [array]) { $lastModified = $lastModified[0] }
-      if ($lastModified) {
-        try {
-          $lastModifiedDate = Get-Date $lastModified
-          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
-        } catch {
-          Write-Error "Error: $($_.Exception.Message)"
-          Write-Error "Date: $lastModified"
-        }
-      }
-      Move-Item -Path $tmpFile -Destination "$dest"
-    } catch {
-      Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
-      break
-    }
-  }
+if ($files) {
+  $files = $files | ForEach-Object { $pythonFTP + $mainVersion + "/" + $_ }
+  Get-Url $files
 }

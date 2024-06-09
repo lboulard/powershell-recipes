@@ -1,9 +1,14 @@
 $ErrorActionPreference = "Stop"
 
+# https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
+# $VerbosePreference = "Continue"
+
 $repo = "https://frippery.org/files/busybox/"
 
 # w32, w64, w64u (unicode), w64a (arm)
 $versionRegex = "^busybox-(w\d+[au]?)-FRP-(?<version>\d+-g[0-9a-f]+)\.exe"
+
+Import-Module lboulard-Recipes
 
 $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 try {
@@ -29,32 +34,11 @@ if (-not $releases) {
 }
 
 
-# https://scatteredcode.net/download-and-extract-gzip-tar-with-powershell/
-function DeGZip-File {
-  param(
-    $infile,
-    $outfile = ($infile -replace '\.gz$', '')
-  )
-
-  $input = New-Object System.IO.FileStream $inFile, ([IO.FileMode]::Open), ([IO.FileAccess]::Read), ([IO.FileShare]::Read)
-  $output = New-Object System.IO.FileStream $outFile, ([IO.FileMode]::Create), ([IO.FileAccess]::Write), ([IO.FileShare]::None)
-  $gzipStream = New-Object System.IO.Compression.GzipStream $input, ([IO.Compression.CompressionMode]::Decompress)
-
-  $buffer = New-Object byte[] (1024)
-  while ($true) {
-    $read = $gzipstream.Read($buffer, 0, 1024)
-    if ($read -le 0) { break }
-    $output.Write($buffer, 0, $read)
-  }
-
-  $gzipStream.Close()
-  $output.Close()
-  $input.Close()
+if ($releases[0] -match $versionRegex) {
+  $version = $Matches.version
+} else {
+  throw "No release found"
 }
-
-
-$releases[0] -match $versionRegex | Out-Null
-$version = $Matches.version
 
 #$files =,"busybox-w32-FRP-$version.exe"
 #$files += "busybox-w32-FRP-$version.exe.sig"
@@ -69,164 +53,23 @@ $files = $files | ForEach-Object { "$_#$version/$_" }
 $files += "busybox.1.gz#man1/busybox-$version.1.gz"
 $files = $files | ForEach-Object { "$repo/$_" }
 
-# and download all
+Get-Url $files -Headers @{ 'User-Agent' = $userAgent }
 
-$folders = @{}  # remember created folder to create only once
-
-$files | ForEach-Object {
-  $url = [System.Uri]($_)
-  $src = $url.AbsoluteUri
-  if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
-    $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
-  } else {
-    $dest = [Uri]::UnescapeDataString($url.Segments[-1])
-  }
-
-  Write-Host "# $dest"
-  if (-not (Test-Path $dest)) {
-    try {
-      Write-Host "  -> $src"
-      $parent = Split-Path -Parent -Path $dest
-      if ($parent -and -not $folders.Contains($parent)) {
-        if (-not (Test-Path $parent -PathType Container)) {
-          New-Item -Path $parent -ItemType Container | Out-Null
-        }
-        $folders.Add($parent, $True)
-      }
-      $tmpFile = "$dest.tmp"
-      $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -UseBasicParsing -PassThru
-      $lastModified = $result.Headers['Last-Modified']
-      # PS7 returns array, PS5 returns string
-      if ($lastModified -is [array]) { $lastModified = $lastModified[0] }
-      if ($lastModified) {
-        try {
-          $lastModifiedDate = Get-Date $lastModified
-          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
-        } catch {
-          Write-Error "Error: $($_.Exception.Message)"
-          Write-Error "Date: $lastModified"
-        }
-      }
-      Move-Item -Path $tmpFile -Destination "$dest"
-    } catch {
-      Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
-      break
-    }
-  }
-
-  if ($dest -match "\.gz$") {
-    $expanded = $dest -replace "\.gz$", ""
-    Write-Host "# $expanded"
-    if (-not (Test-Path $expanded)) {
-      DeGZip-File "$dest"
-    }
-  }
-}
-
-# Support reading hardlinks on PS7+
-
-Add-Type -TypeDefinition @"
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
-
-public class FileLinkEnumerator
-{
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    public static extern IntPtr FindFirstFileNameW(string lpFileName, uint dwFlags, ref uint stringLength, StringBuilder linkName);
-
-    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool FindNextFileNameW(IntPtr hFindStream, ref uint stringLength, StringBuilder linkName);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    public static extern bool FindClose(IntPtr hFindStream);
-}
-"@
-
-function List-HardLinks {
-  param (
-    [string]$FilePath
-  )
-
-  $fileInfo = Get-Item -LiteralPath $FilePath
-  $fileName = $fileInfo.FullName
-  $links = @()
-
-  $stringLength = 260
-  $linkName = New-Object System.Text.StringBuilder -ArgumentList $stringLength
-  $handle = [FileLinkEnumerator]::FindFirstFileNameW($fileName, 0, [ref]$stringLength, $linkName)
-
-  if ($handle -eq [IntPtr]::Zero) {
-    throw "Failed to find first file name: $([ComponentModel.Win32Exception]::new([Runtime.InteropServices.Marshal]::GetLastWin32Error()).Message)"
-  }
-
-  $drive = $fileInfo.PSDrive.Root.TrimEnd('\')
-  try {
-    do {
-      $drive + $linkName.ToString()
-      $linkName = $linkName.Clear()
-      $stringLength = 260
-    } while ([FileLinkEnumerator]::FindNextFileNameW($handle, [ref]$stringLength, $linkName))
-  } finally {
-    [FileLinkEnumerator]::FindClose($handle) | Out-Null
-  }
-}
-
-function Get-HardLinks {
-  param (
-    [string]$FilePath
-  )
-  return @(List-HardLinks $FilePath)
-}
-
-function Find-HardLink {
-  param(
-    [string]$FilePath,
-    [string]$LinkPath
-  )
-
-  $fileInfo = Get-Item -LiteralPath $LinkPath
-  $fullName = $fileInfo.FullName
-  List-HardLinks $FilePath | ForEach-Object {
-    if ($fullName -eq $_) {
-      return $True
-    }
-  }
-  return $False
+if (-not (Test-Path "man1/busybox-$version.1" )) {
+  Expand-GZip "man1/busybox-$version.1.gz"
 }
 
 if (!$error) {
-  $links = (
+  @(
     ("busybox.exe", "$version/busybox-w32-FRP-$version.exe"),
     ("busybox64.exe", "$version/busybox-w64u-FRP-$version.exe")
-  )
-
-  $links | ForEach-Object {
-    $link = $_[0]
-    $path = $_[1]
-    if ((Test-Path $link) -and (Test-Path $path)) {
-      $l = (Get-Item -Path $link -Force -ea SilentlyContinue)
-      if ($l.LinkType -eq "HardLink") {
-        $p = (Get-Item -Path $path -Force -ea SilentlyContinue)
-        $target = $l.Target
-        if (-not $target) {
-          # PS7+ does not read hardlinks by default
-          if (Find-HardLink $p.FullName $l.FullName) {
-            $target = $p.FullName
-          }
-        }
-        if ($target -eq $p.FullName) {
-          Write-Host "hardlink: $link -> $path (no change)"
-          return
-        }
-      }
-    }
-
-    Write-Host "hardlink: $link -> $path"
+  ) | ForEach-Object {
     try {
-      New-Item -Path $link -Item HardLink -Value $path -Force | Out-Null
+      $link = $_[0]
+      $path = $_[1]
+      $updated = (Update-HardLink $path $link -CreateIfAbsent).Updated
+      Write-Host "hardlink: $link -> $path" -NoNewline
+      Write-Host $(if ($updated) { "" } else { " (nochange)" })
     } catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
       break

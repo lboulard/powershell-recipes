@@ -5,6 +5,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
+# $VerbosePreference = "Continue"
+
 $index = "https://ziglang.org/download/index.json"
 
 $versionRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.\d+)?$"

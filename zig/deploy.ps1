@@ -121,7 +121,7 @@ if (-not $selected) {
 }
 
 
-$count = if ($selected[0].Name -match '-dev') { 1 } else { 2 }
+$count = if ($selected[0].Name -match '-dev') { 1 } else { 3 }
 $toDeploy = $selected | Select-Object -First $count
 
 # $toDeploy | Select-Object FullName
