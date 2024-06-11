@@ -50,10 +50,14 @@ $html = Get-HTML -Uri $pythonFTP
 $pathnames = $html.links | ForEach-Object {
   $_.pathname
 } | Where-Object {
-  $_ -match ("^" + $branchRegex + "/$")
+  try {
+    $_ -match ("^" + $branchRegex + "/$")
+  } catch {
+  }
 } | Sort-Object -Descending -Property {
-  $_ -match $branchRegex
-  $Matches.version -as [version]
+  if ($_ -match $branchRegex) {
+    $Matches.version -as [version]
+  }
 }, { $_ }
 
 $links = @()
