@@ -6,36 +6,31 @@
 $ErrorActionPreference = "Stop"
 
 $IndexURL = "https://vivaldi.com/download/archive/?platform=win"
-$versionPattern = "(?<version>\d+\.\d+\.\d+\.\d+)"
-$filePattern = "Vivaldi\.${versionPattern}\.x64\.exe$"
+$fileRegex = "/Vivaldi\.(?<version>\d+\.\d+\.\d+\.\d+)\.x64\.exe$"
 
 $html = Invoke-WebRequest -Uri $IndexURL -UseBasicParsing `
-        -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+  -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 
 # Find latest version at page root
 
 $url = [System.Uri]$IndexURL
 
-$files = $html.links | ForEach-Object {
-  $_.href
-} | Where-Object {
-  try {
-    $_ -match "/${filePattern}"
-  } catch {
-    $False
+$links = $html.links
+
+$files = $links.href | ForEach-Object {
+  if ($_ -match $fileRegex) {
+    @{version = [version]$Matches.version; target = $_ }
   }
 } | Sort-Object -Descending -Property {
-  if ($_ -match $versionPattern) {
-    $Matches.version -as [version]
-  }
-}, { $_ } | ForEach-Object {
+  $_.version
+}, { $_ } | % { $_.target } | ForEach-Object {
   (New-Object System.Uri -ArgumentList $url, $_).AbsoluteUri
-}
+} | Select-Object -First 1
 
-if ($files) {
-  $files[0] -match $versionPattern | Out-Null
-  $version = $Matches.version -as [version]
-  $files = $files | Select-Object -First 1
+$files
+
+if ($files -match $fileRegex) {
+  $version = [version]$Matches.version
 } else {
   throw "no release found"
 }
