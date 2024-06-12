@@ -11,7 +11,8 @@ $wanted = "(${wanted})|(Docs\.zip)"
 $wanted = "^(${wanted})(\.sha256sum)?$"
 
 $nameMangle = {
-  $name -replace "\.(exe|zip)", "-${version}`$0"
+  $name = $name -replace "\.(exe|zip)", "-${version}`$0"
+  "${version}/${name}"
 }
 
 Import-Module lboulard-Recipes
