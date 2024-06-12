@@ -47,24 +47,20 @@ function Get-HTML {
 
 $html = Get-HTML -Uri $pythonFTP
 
-$pathnames = $html.links | ForEach-Object {
-  $_.pathname
-} | Where-Object {
-  try {
-    $_ -match ("^" + $branchRegex + "/$")
-  } catch {
-  }
-} | Sort-Object -Descending -Property {
-  if ($_ -match $branchRegex) {
-    $Matches.version -as [version]
-  }
-}, { $_ }
+$url = [System.Uri]$pythonFTP
 
 $links = @()
-$pathnames | ForEach-Object {
-  $releaseURL = $pythonFTP + $_
-  $html = Get-HTML -Uri $releaseURL
-  $links += $html.links | ForEach-Object {
+$html.links | % { $_.pathname } | ForEach-Object {
+  if ($_ -match $branchRegex) {
+    @{target = $_; version = [version]$Matches.version }
+  }
+} | Sort-Object -Descending -Property {
+  $_.version
+}, { $_ } | % { $_.target } | ForEach-Object {
+  (New-Object System.Uri -ArgumentList $url, $_).AbsoluteUri
+} | ForEach-Object {
+  Write-Verbose "Reading $_"
+  $links += (Get-Html -Uri $_).links | ForEach-Object {
     $_.pathname
   } | Where-Object {
     # .exe are the default since 3.4, .msi before
