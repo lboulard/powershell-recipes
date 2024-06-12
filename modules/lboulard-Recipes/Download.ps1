@@ -22,9 +22,9 @@ function Get-Url() {
       $url = [System.Uri]($_)
       $src = $url.AbsoluteUri
       if ($url.Fragment -and ($url.Fragment.Length -gt 1)) {
-        $dest = [System.Web.HttpUtility]::UrlDecode($url.Fragment.Substring(1))
+        $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
       } else {
-        $dest = [System.Web.HttpUtility]::UrlDecode($url.Segments[-1])
+        $dest = [Uri]::UnescapeDataString($url.Segments[-1])
       }
 
       Write-Host "# $dest"
