@@ -5,50 +5,49 @@ $ErrorActionPreference = "Stop"
 
 Import-Module lboulard-Recipes
 
-$repo = "https://go.dev/dl/"
-
-$versionRegex = "^/dl/(?<release>go(?<version>\d+\.\d+(\.\d+)+)\.(linux-amd64|linux-armv6l|windows-amd64).*)"
+$IndexURL = "https://go.dev/dl/"
+$pathRegex = "/dl/(?<release>go(?<version>\d+\.\d+(\.\d+)+)\.(linux-amd64|linux-armv6l|windows-amd64).*)"
 
 $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 try {
-  $html = Invoke-WebRequest -Uri $repo -UseBasicParsing -UserAgent $userAgent
+  $html = Invoke-WebRequest -Uri $IndexURL -UseBasicParsing -UserAgent $userAgent
 } catch {
   Write-Error "Error: $($_.Exception.Message)"
   exit 1
 }
+
+$url = [System.Uri]$IndexURL
+
 $links = $html.Links
 
-$releases = $links.href | Where-Object {
-  try {
-    $_ -match $versionRegex
-  } catch {
+$releases = $links.href | ForEach-Object {
+  if ($_ -match $pathRegex) {
+    @{target = $_; version = [version]$Matches.version }
   }
-} | Sort-Object -Unique -Descending -Property {
-  if ($_ -match $versionRegex) {
-    $Matches.version -as [version]
-  }
-}, { $_ }
+} | Sort-Object -Descending -Property {
+  $_.version
+}, { $_ } | % { $_.target } | ForEach-Object {
+  (New-Object System.Uri -ArgumentList $url, $_).AbsoluteUri
+}
 
 if (-not $releases) {
   [Console]::Error.WriteLine(($links | Select-Object -ExpandProperty href) -join "`n")
   throw "no releases found"
 }
 
-# keep only two last branch that are maintained
-
-$url = [System.Uri]$repo
-
-# Get list of maintained version
+# Keep only two last branches that are maintained
 
 # BEWARE: PS5 maintains order when grouping object, PS6+ does not maintain order
 $maintained = $releases | ForEach-Object {
-  if ($_ -match $versionRegex) {
+  if ($_ -match $pathRegex) {
     $version = [version]$Matches.version
+    $major, $minor = [int]$version.Major, [int]$version.Minor
     [pscustomobject]@{
-      href    = $_
-      version = $version
-      Major   = [int]$version.Major
-      Minor   = [int]$version.Minor
+      Target  = $_
+      Version = $version
+      Branch  = (@($major, $minor) -join ".")
+      Major   = $major
+      Minor   = $minor
       Release = $Matches.Release
     }
   }
@@ -65,15 +64,17 @@ $maintained = $releases | ForEach-Object {
 # other version are downloaded in "$version" folder
 
 $files = $maintained | ForEach-Object -Begin { $last = $null } {
-  $dl = New-Object System.Uri -ArgumentList $url, $_.href
-  if ((-not $last) -or ($last -eq $_.version)) {
+  $Target = $_.Target
+  if ((-not $last) -or ($last -eq $_.Version)) {
     $last = $_.version
-    "$dl#$($_.Release)"
+    "${target}#$($_.Release)"
   } else {
-    $branch = "$($_.Major).$($_.Minor)"
-    "$dl#$branch/$($_.Release)"
+    $branch = $_.Branch
+    "${target}#${branch}/$($_.Release)"
   }
 }
+
+$files
 
 if ($files) {
   Get-Url $files
