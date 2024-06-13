@@ -43,7 +43,7 @@ $url = [System.Uri]$repo
 
 # Get list of maintained version
 
-# BEWARE: PS5 maintains order when grouping object, PS6+ does not maintain order
+# BEWARE: PS5 maintains order when grouping objects, PS6+ does not maintain order
 $maintained = $releases | ForEach-Object {
   if ($_ -match $versionRegex) {
     $version = [version]$Matches.version
@@ -68,15 +68,10 @@ $maintained = $releases | ForEach-Object {
 # last version is downloaded in current folder
 # other version are downloaded in "$version" folder
 
-$files = $maintained | ForEach-Object -Begin { $last = $null } {
+$files = $maintained | ForEach-Object {
   $dl = New-Object System.Uri -ArgumentList $url, $_.href
-  if ((-not $last) -or ($last -eq $_.version)) {
-    $last = $_.version
-    "$dl#$($_.Release)"
-  } else {
-    $branch = "$($_.Major).$($_.Minor)"
-    "$dl#$branch/$($_.Release)"
-  }
+  $branch = "$($_.Major).$($_.Minor)"
+  "$dl#erlang-$branch/$($_.Release)"
 }
 
 if ($files) {
