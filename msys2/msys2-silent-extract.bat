@@ -3,11 +3,20 @@
 @CD /D "%~dp0"
 @IF ERRORLEVEL 1 GOTO :exit
 
+:: check if not admin
+@fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
+@IF %ERRORLEVEL% EQU 0 (
+  @ECHO This script shall run as current user.
+  @CALL :errorlevel 128
+  @GOTO :exit
+)
+@TYPE NUL>NUL
+
 @SET VERSION=notfound
 @SET PRG=
 @FOR /D %%d IN ("msys2-*") DO @(
-  @FOR %%f IN ("%%d\msys2-x86_64-*.exe") DO @(
-    @FOR /F "tokens=3 delims=-" %%s IN ("%%~nf") DO @(
+  @FOR %%f IN ("%%d\msys2-base-x86_64-*.sfx.exe") DO @(
+    @FOR /F "tokens=4 delims=-" %%s IN ("%%~nf") DO @(
       @REM date is YYYYMMDD, without any seperators
       @SET "V=%%s"
       @CALL :version "!V:~0,4!" "!V:~4,2!" "!V:~6,2!" "" "%%f" "-"
@@ -25,20 +34,16 @@
 @SET DEST=C:/msys64
 @IF EXIST C:\DEV\. @SET DEST=C:/DEV/msys64
 
-@IF "%1"=="uninstall" @GOTO :uninstall
+".\%PRG%" -y -o%DEST%
 
-".\%PRG%" in --confirm-command --accept-messages --root %DEST%
-
-:exit
-:: Pause if not interactive
+@:: Pause if not interactive
+@:exit
 @SET ERR=%ERRORLEVEL%
+@IF ERRORLEVEL 1 @ECHO Failure ERRORLEVEL=%ERRORLEVEL%
+@TYPE NUL>NUL
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
 @ENDLOCAL&EXIT /B %ERR%
-
-@:uninstall
-@%DEST:/=\%\uninstall.exe pr --confirm-command
-@GOTO :EOF
 
 :version
 @SET "X=000000000%~1"

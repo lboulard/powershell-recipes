@@ -8,7 +8,7 @@ $project = "msys2/msys2-installer"
 $tagPattern = "^(?<tag>(?<version>\d+-\d+-\d+))$"
 
 $installer = "msys2-x86_64-.+\.exe(\.sha256|\.sig)?"
-$archiveBase = "msys2-base-x86_64-.+\.tar\.(xz|zst)(\.sha256|\.sig)?"
+$archiveBase = "msys2-base-x86_64-.+(\.tar\.(xz|zst)|\.sfx\.exe)(\.sha256|\.sig)?"
 $packageList = "msys2-base-x86_64-.+\.packages\.txt"
 $wanted = "^(${installer}|${archiveBase}|${packageList})$"
 
