@@ -68,7 +68,8 @@ function Get-GitHubAssetsOfLatestRelease() {
     [string]$Project,
     [Parameter(Mandatory, Position = 1)]
     [string]$tagPattern,
-    [ScriptBlock]$FileSelection = {}
+    [ScriptBlock]$FileSelection = {},
+    [ScriptBlock]$NameMangle = {}
   )
 
   $lastVersionUrl = Get-GitHubLatestReleaseUrl $project
@@ -99,7 +100,15 @@ function Get-GitHubAssetsOfLatestRelease() {
 
   $repo = "https://github.com/$project/releases/download/$tag"
 
-  $files = $FileSelection.InvokeWithContext($null, $vars) | ForEach-Object { "$repo/$_" }
+  $files = $FileSelection.InvokeWithContext($null, $vars) | ForEach-Object {
+    $varsWithName = $vars + @([psvariable]::new('name', $_))
+    $name = $NameMangle.InvokeWithContext($null, $varsWithName)
+    if ($name -and ($name -ne $_)) {
+      "$repo/$_#$name"
+    } else {
+      "$repo/$_"
+    }
+  }
   if ($files) {
     Get-Url $files
   }
