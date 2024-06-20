@@ -26,5 +26,5 @@ Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
     "caddy_${version}_linux_arm64.tar.gz.sig"
   )
 } -NameMangle {
-    "caddy-${version}/${name}"
+  "caddy-${version}/${name}"
 }
