@@ -5,7 +5,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$IndexURL = "https://vivaldi.com/download/archive/?platform=win"
+$IndexURL = "https://vivaldi.com/download/"
 $fileRegex = "/Vivaldi\.(?<version>\d+\.\d+\.\d+\.\d+)\.x64\.exe$"
 
 $html = Invoke-WebRequest -Uri $IndexURL -UseBasicParsing `
