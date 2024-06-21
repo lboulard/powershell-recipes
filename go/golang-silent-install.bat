@@ -16,6 +16,7 @@ GOTO :EOF
 
 @IF NOT EXIST "%LOCALAPPDATA%\lboulard" MD "%LOCALAPPDATA%\lboulard"
 @IF NOT EXIST "%LOCALAPPDATA%\lboulard\logs" MD "%LOCALAPPDATA%\lboulard\logs"
+
 msiexec /i "%NAME%.msi"^
  /QB /L*V "%LOG%"^
  /passive /norestart
