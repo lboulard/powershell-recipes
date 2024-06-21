@@ -26,6 +26,10 @@ IF "%1"=="uninstall" GOTO :Uninstall
 
 ECHO ON
 
+TASKKILL /F /IM "gpg-agent.exe" /T
+TASKKILL /F /IM "ssh-pageant.exe" /T
+TASKKILL /F /IM "git.exe" /T
+
 @REM fully silent: /SUPPRESSMSGBOXES
 START /WAIT %PRG% ^
  /SP- ^
@@ -33,6 +37,7 @@ START /WAIT %PRG% ^
  /NORESTART ^
  /SUPPRESSMSGBOXES ^
  /CLOSEAPPLICATIONS ^
+ /FORCECLOSEAPPLICATIONS ^
  /NORESTARTAPPLICATIONS ^
  /LOADINF=git-silent-install.inf ^
  /LOG=%LOG%
