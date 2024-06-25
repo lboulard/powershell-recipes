@@ -7,10 +7,11 @@ $tagPattern = "/(?<tag>(?<version>\d+\.\d+(\.\d+){0,2}))$"
 $project = "jgm/pandoc"
 
 $pandoc = "pandoc-(\d+\.\d+(?:\.\d+(?:\.\d+)?)?)"
-$wanted_x86 = "${pandoc}-windows-i386\.(?:exe|msi)"
-$wanted_x64 = "${pandoc}-windows-x86_64\.(?:exe|msi)"
+$wanted_x86 = "${pandoc}-windows-i386\.(?:exe|msi|zip)"
+$wanted_x64 = "${pandoc}-windows-x86_64\.(?:exe|msi|zip)"
 $wanted_deb = "${pandoc}-(?:\d+)-(amd64|arm64)\.deb"
-$wanted = "^(${wanted_x64})|(${wanted_x86})|($wanted_deb)$"
+$wanted_linux = "${pandoc}-linux-(?:amd64|arm64)\.(?:tar\..+)"
+$wanted = "^(${wanted_x64})|(${wanted_x86})|($wanted_deb)|($wanted_linux)$"
 
 $nameMangle = {
   "pandoc-${version}/${name}"
