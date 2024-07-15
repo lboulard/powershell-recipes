@@ -48,19 +48,20 @@ $maintained = $releases | ForEach-Object {
   if ($_ -match $versionRegex) {
     $version = [version]$Matches.version
     [pscustomobject]@{
-      href    = $_
-      version = $version
-      Major   = [int]$version.Major
-      Minor   = [int]$version.Minor
-      Build   = [math]::max(0, $version.Build)
-      Release = $Matches.Release
+      href     = $_
+      version  = $version
+      Major    = [int]$version.Major
+      Minor    = [int]$version.Minor
+      Build    = [math]::max(0, $version.Build)
+      Revision = [math]::max(0, $version.Revision)
+      Release  = $Matches.Release
     }
   }
 } | Group-Object {
   "{0:d4}.{1:d4}" -f $_.Major, $_.Minor
 } | Sort-Object -Descending Name | Select-Object -First 2 | ForEach-Object {
   $_.Group | Group-Object {
-    "{0:d4}.{1:d4}.{2:d4}" -f $_.Major, $_.Minor, $_.Build
+    "{0:d4}.{1:d4}.{2:d4}.{3:d4}" -f $_.Major, $_.Minor, $_.Build, $_.Revision
   } | Sort-Object -Descending Name | Select-Object -First 1
 } | Select-Object -ExpandProperty "Group"
 
