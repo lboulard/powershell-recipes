@@ -198,8 +198,11 @@ function Get-GitHubReleases() {
     [ScriptBlock]$Continue = { param($release) $True }
   )
 
-  try {
+  begin {
     . $Begin
+  }
+
+  process {
     # initial URL to start finding releases.
     # Query "per_page" for pagination is kept in link header response
     $url = "https://api.github.com/repos/$Project/releases?per_page=25"
@@ -216,7 +219,8 @@ function Get-GitHubReleases() {
         $result.Content | ConvertFrom-Json | ForEach-Object {
           Write-Verbose "Release tag: $($_.tag_name)"
           . $Process($_)
-          if (-not (. $continue($_))) {
+          $shouldContinue = . $Continue($_)
+          if (-not $shouldContinue) {
             break
           }
         }
@@ -225,7 +229,9 @@ function Get-GitHubReleases() {
       # next page of releases
       $url = $next
     }
-  } finally {
+  }
+
+  end {
     . $End
   }
 }
@@ -239,19 +245,28 @@ function Find-GitHubRelease() {
     [string]$Token,
     [int]$MaxPages = 5,
     [bool]$PreRelease = $False,
-    [ScriptBlock]$ReleaseScript = { param($release) },
-    [ScriptBlock]$Filter = {}
+    [ScriptBlock]$ReleaseScript = $null,
+    [ScriptBlock]$Filter = $null,
+    [ScriptBlock]$Cont = $null
   )
 
-  Get-GitHubReleases -Project $project -Token $githubToken -MaxPages $MaxPages -Begin {
-    $found = $False
-  } -Continue {
-    -not $found
+  Get-GitHubReleases -Project $project -Token $githubToken -MaxPages $MaxPages -Continue {
+    if ($urls) {
+      if ($Cont) {
+        . $Cont
+      } else {
+        $urls.Length -eq 0
+      }
+    } else {
+      $true
+    }
   } -Process {
     param($release)
 
     #Write-Host "Release tag: $($release.tag_name)"
-    . $ReleaseScript($release)
+    if ($ReleaseScript) {
+      . $ReleaseScript($release)
+    }
 
     # ignore prerelease
     if ($release.prerelease -and (-not $PreRelease)) {
@@ -269,11 +284,15 @@ function Find-GitHubRelease() {
       )
       Write-Verbose "Release tag: $($_.tag_name), version ${version}"
 
-      $result = $Filter.InvokeWithContext($null, $vars)
-      if ($result) {
-        $found = $True
-        $result
+      if ($Filter) {
+        $urls = $Filter.InvokeWithContext($null, $vars)
+      } else {
+        $urls = $release.assets | ForEach-Object {
+          $name = $_.name
+          "$($_.browser_download_url)#${name}"
+        }
       }
+      $urls
     }
   }
 }
@@ -289,12 +308,14 @@ function Find-GitHubReleaseFromAsset() {
     [string]$Token,
     [int]$MaxPages = 5,
     [bool]$PreRelease = $False,
-    [ScriptBlock]$ReleaseScript = { param($release) },
-    [ScriptBlock]$NameMangle = {}
+    [ScriptBlock]$ReleaseScript = $null,
+    [ScriptBlock]$NameMangle = $null,
+    [ScriptBlock]$Continue = $null
   )
 
   Find-GitHubRelease -Project $Project -TagPattern $TagPattern `
-    -MaxPages $MaxPages -ReleaseScript $ReleaseScript -Filter {
+    -MaxPages $MaxPages -ReleaseScript $ReleaseScript -Cont $Continue `
+    -Filter {
     $release.assets | ForEach-Object {
       $asset = $_
       $name = $asset.name
@@ -308,6 +329,7 @@ function Find-GitHubReleaseFromAsset() {
           )
           $name = $NameMangle.InvokeWithContext($null, $vars)
         }
+        Write-Verbose "$($asset.browser_download_url)#$name"
         "$($asset.browser_download_url)#${name}"
       }
     }
