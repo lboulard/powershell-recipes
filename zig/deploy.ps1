@@ -128,7 +128,7 @@ $toDeploy = $selected | Select-Object -First $count
 
 $apps = Join-Path $prefix "Apps"
 $bin = Join-Path $prefix "bin"
-$workDir = Join-Path $apps "zip-tmp"
+$workDir = Join-Path $apps "zip-tmp-$PID-$(Get-Random -Maximum 100000)"
 
 function relative([string]$s) {
   ($s -replace [Regex]::Escape($prefix), '').Trim('\\')
