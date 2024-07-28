@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
-import re
-import unittest
-from dataclasses import dataclass, field
-from enum import Enum
-from functools import total_ordering
-
-from itertools import groupby
-from pathlib import Path
-
 import os
 import re
 import sys
+import unittest
 from contextlib import contextmanager
-from itertools import takewhile
+from dataclasses import dataclass, field
+from enum import Enum
+from functools import total_ordering
+from itertools import groupby, takewhile
 from pathlib import Path
 from zipfile import ZipFile
-
 
 #############################################################################
 ### version parsing
@@ -421,15 +415,130 @@ def clean_up():
 #############################################################################
 ### extract
 
+from datetime import datetime
+from queue import Full, Queue
+from threading import Condition, Thread
 
-def extract_to_dest(dest, path):
-    print(f"EXTRACT: {path} → {dest}")
-    with ZipFile(path) as z:
-        for name in z.namelist():
+
+class Limiter:
+    def __init__(self, size):
+        self.bound = size
+        self.max = size
+        self._cv = Condition()
+
+    def acquire(self, n):
+        cv = self._cv
+        with cv:
+            while self.bound < n:
+                cv.wait()
+            self.bound -= n
+
+    def release(self, n):
+        with self._cv:
+            self.bound += n
+            self._cv.notify()
+
+    def reset(self):
+        with self._cv:
+            self.bound = self.max
+            self._cv.notify()
+
+
+# no more than 256MB of data in queues
+LIMIT = Limiter(256 << 20)
+
+
+def sanitize_path(name):
+    pathsep = os.path.sep
+    name = name.replace("/", pathsep)
+    if os.path.altsep:
+        name = name.replace(os.path.altsep, pathsep)
+    name = os.path.splitdrive(name)[1]
+    bad = ("", os.path.curdir, os.path.pardir)
+    arcname = (x for x in name.split(pathsep) if x not in bad)
+    table = str.maketrans(':<>|"?*', "_______")
+    arcname = (x.translate(table) for x in arcname)
+    arcname = (x.rstrip(" .") for x in arcname)
+    name = os.path.sep.join(x for x in arcname if x)
+    return name
+
+
+def write_file(pathname, mtime_ns, queue):
+    parents = os.path.dirname(pathname)
+    if parents and not os.path.exists(parents):
+        os.makedirs(parents)
+    with open(pathname, "wb") as w:
+        data = queue.get()
+        while data:
+            w.write(data)
+            LIMIT.release(len(data))
+            data = queue.get()
+    try:
+        st = os.stat(pathname)
+        os.utime(pathname, ns=(st.st_atime_ns, mtime_ns))
+    except (OverflowError, OSError):
+        pass
+
+
+def date_time_ns(date_time):
+    dt = datetime(*date_time)
+    return int(dt.timestamp() * 10**9)
+
+
+def write_files_from_archive(dest, queue):
+    end = ""
+    try:
+        while True:
+            filename, date_time = queue.get()
+            if not filename:
+                break
+            filename = sanitize_path(filename)
             print("\033[K  ", end="")
-            print(dest / name, end="\r")
-            z.extract(name, path=dest)
-    print("\n")
+            pathname = os.fspath(dest / filename)
+            print(pathname, end="\r")
+            end = "\n"
+            mtime_ns = date_time_ns(date_time)
+            write_file(pathname, mtime_ns, queue)
+    finally:
+        print(end)
+
+
+def write_thread(queue):
+    try:
+        while True:
+            dest, archive = queue.get()
+            if not archive:
+                break
+            print(f"EXTRACT: {archive} → {dest}")
+            write_files_from_archive(dest, queue)
+    except:
+        LIMIT.reset()
+        raise
+
+
+def extract_to_file(source, queue):
+    buf = source.read(65536)
+    while buf:
+        LIMIT.acquire(len(buf))
+        queue.put(buf, timeout=10)
+        buf = source.read(65536)
+
+
+def extract_to_dest(dest, path, queue):
+    queue.put((dest, path), timeout=10)
+    try:
+        with ZipFile(path) as z:
+            for zi in z.infolist():
+                queue.put((zi.filename, zi.date_time), timeout=10)
+                try:
+                    with z.open(zi, pwd=dest) as source:
+                        extract_to_file(source, queue)
+                finally:
+                    # end of data flow
+                    queue.put(b"", timeout=10)
+    finally:
+        # no more files to write
+        queue.put((None, None), timeout=10)
 
 
 def die(*args, out=sys.stderr):
@@ -452,8 +561,20 @@ def extract_all(files):
     version = extract_version(files[0])
     print("Using version " + version.full)
     # files = takewhile(lambda p: extract_version(p) == version, files)
-    for path, dest in walk(version, files):
-        extract_to_dest(dest, path)
+    queue = Queue()
+    # start write in another thread
+    wq = Thread(target=write_thread, args=(queue,))
+    wq.start()
+    try:
+        for path, dest in walk(version, files):
+            extract_to_dest(dest, path, queue)
+    except Full:
+        print("write thread failed!", file=sys.stderr)
+        raise
+    finally:
+        # exit write thread with no more archive to write
+        queue.put((None, None), timeout=10)
+        wq.join()
 
 
 def iosevka_extract():
