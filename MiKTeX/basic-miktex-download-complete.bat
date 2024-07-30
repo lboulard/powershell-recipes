@@ -7,7 +7,7 @@
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
 @IF %ERRORLEVEL% EQU 0 (
   @ECHO This script shall run as current user.
-  @SETG ERRORLEVEL=64
+  @CALL :errorlevel 128
   @GOTO :exit
 )
 
@@ -16,7 +16,7 @@
 @ECHO SET PRG=%PRG%
 @IF NOT DEFINED PRG (
   @ECHO ** ERROR: No Basic MiKTeX installation program found
-  @SET ERRORLEVEL=64
+  @CALL :errorlevel 64
   @GOTO :exit
 )
 
@@ -51,3 +51,6 @@
 @IF NOT ERRORLEVEL 1 PAUSE
 @:_elev
 @ENDLOCAL&EXIT /B %ERR%
+
+:errorlevel
+@EXIT /B %~1

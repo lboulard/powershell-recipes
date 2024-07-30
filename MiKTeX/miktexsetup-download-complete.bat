@@ -7,7 +7,7 @@
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
 @IF %ERRORLEVEL% EQU 0 (
   @ECHO This script shall run as current user.
-  @SETG ERRORLEVEL=64
+  @CALL :errorlevel 128
   @GOTO :exit
 )
 
@@ -27,10 +27,10 @@
 @:: Pause if not interactive
 @:exit
 @SET ERR=%ERRORLEVEL%
-@IF DEFINED _ELEV GOTO :_elev
-@IF ERRORLEVEL 1 @ECHO Failure ERRORLEVEL=%ERRORLEVEL%
 @SET ERRORLEVEL=0
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
-@:_elev
 @ENDLOCAL&EXIT /B %ERR%
+
+:errorlevel
+@EXIT /B %~1
