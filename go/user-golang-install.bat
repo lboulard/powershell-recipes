@@ -4,7 +4,7 @@
 @IF ERRORLEVEL 1 @GOTO :Exit
 
 @SET NAME=
-@FOR %%f IN ("go1.22*.windows-amd64.zip") DO @SET "NAME=%%~nxf"
+@FOR %%f IN ("go1.*.windows-amd64.zip") DO @SET "NAME=%%~nxf"
 @ECHO SET NAME=%NAME%
 @IF NOT DEFINED NAME (
   @ECHO ** ERROR: go language installation program not found
