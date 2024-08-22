@@ -1,16 +1,26 @@
-@SETLOCAL
+@SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 @CHCP 65001 >NUL:
 @CD /D "%~dp0"
-@IF ERRORLEVEL 1 @GOTO :Exit
+@IF ERRORLEVEL 1 @GOTO :exit
 
-@SET NAME=
-@FOR %%f IN ("go1.*.windows-amd64.zip") DO @SET "NAME=%%~nxf"
-@ECHO SET NAME=%NAME%
-@IF NOT DEFINED NAME (
-  @ECHO ** ERROR: go language installation program not found
+@SET VERSION=notfound
+@SET ARCHIVE=
+@FOR /D %%d IN ("go1*") DO @(
+  FOR %%f IN ("%%d\go1*.windows-amd64.zip") DO @(
+    FOR /F "tokens=1-3 delims=." %%i IN ("%%~nf") DO @(
+      SET "m=%%i"
+      CALL :version "!m:go=!" "%%j" "%%k" "" "%%f"
+    )
+  )
+)
+
+@ECHO/VERSION=%VERSION%
+@IF "%VERSION%"=="notfound" @(
+  @ECHO ** ERROR: go language archive not found
   @CALL :errorlevel 64
   @GOTO :exit
 )
+@ECHO/ARCHIVE=%ARCHIVE%
 
 @IF "%LBHOME%"=="" @(
   @ECHO/** ERROR Missing LBHOME environment variable
@@ -29,12 +39,41 @@
 @where /Q pwsh.exe
 @IF %ERRORLEVEL% EQU 0 (
   pwsh.exe -NoProfile -Command^
-    "Expand-Archive -LiteralPath '%NAME%' -DestinationPath '%APPS%' -Force"
+    "Expand-Archive -LiteralPath '%ARCHIVE%' -DestinationPath '%APPS%' -Force"
 ) ELSE @(
   PowerShell.exe -NoProfile -Command^
-    "Expand-Archive -LiteralPath '%NAME%' -DestinationPath '%APPS%' -Force"
+    "Expand-Archive -LiteralPath '%ARCHIVE%' -DestinationPath '%APPS%' -Force"
 )
-@IF ERRORLEVEL 1 @GOTO :Exit
+
+@GOTO :exit
+
+:version
+@SET "X=000000000%~1"
+@SET "Y=000000000%~2"
+@SET "Z=000000000%~3"
+@SET "P=000000000%~4"
+@SET "_VERSION=%X:~-8%.%Y:~-8%.%Z:~-8%.%P:~-8%"
+@IF %VERSION%==notfound GOTO :update
+@IF %_VERSION% GTR %__VERSION% GOTO :update
+@GOTO :EOF
+
+:update
+@SET "__VERSION=%_VERSION%"
+@IF NOT "%~4"=="" (
+  SET "VERSION=%~1.%~2.%~3.%~4"
+) ELSE (
+  IF NOT "%~3"=="" (
+    SET "VERSION=%~1.%~2.%~3"
+  ) ELSE (
+    IF NOT "%~2"=="" (
+      SET "VERSION=%~1.%~2"
+    ) ELSE (
+      SET "VERSION=%~1"
+    )
+  )
+)
+@SET "ARCHIVE=%~5"
+@GOTO :EOF
 
 @:: Pause if not interactive
 @:exit

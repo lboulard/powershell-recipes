@@ -63,15 +63,8 @@ $maintained = $releases | ForEach-Object {
 # last version is downloaded in current folder
 # other version are downloaded in "$version" folder
 
-$files = $maintained | ForEach-Object -Begin { $last = $null } {
-  $Target = $_.Target
-  if ((-not $last) -or ($last -eq $_.Version)) {
-    $last = $_.version
-    "${target}#$($_.Release)"
-  } else {
-    $branch = $_.Branch
-    "${target}#${branch}/$($_.Release)"
-  }
+$files = $maintained | ForEach-Object {
+  "$($_.Target)#go$($_.Branch)/$($_.Release)"
 }
 
 $files
