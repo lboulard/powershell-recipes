@@ -3,6 +3,7 @@
 @ECHO SET GOPATH=%GOPATH%
 @CALL :absolute ROOT "%LBHOME%"
 SET "APPS=%ROOT%\Apps"
+SET "GOSDK=%ROOT%\go\sdk"
 
 @GOTO :EOF
 
