@@ -103,7 +103,8 @@ RD /Q /S "%UTMPDIR%
 @REM Create GOSDK\go1.x junction to GOSDK\go1.x.y
 
 @IF NOT EXIST "%GOSDK%\go%GOBRANCH%\." GOTO :linktofolder
-linkd.exe "%GOSDK%\go%GOBRANCH%" /D
+fsutil.exe reparsepoint delete "%GOSDK%\go%GOBRANCH%"
+RD /Q "%GOSDK%\go%GOBRANCH%"
 @IF ERRORLEVEL 1 @GOTO :exit
 :linktofolder
 PUSHD "%GOSDK%
@@ -115,7 +116,8 @@ POPD
 
 @IF DEFINED LINKFROMAPPS @(
   @IF NOT EXIST "%APPS%\go\." GOTO :applink
-  linkd.exe "%APPS%\go" /D
+  fsutil.exe reparsepoint delete "%APPS%\go"
+  RD /Q "%APPS%\go"
   @IF ERRORLEVEL 1 @GOTO :exit
   :applink
   MKLINK /J "%APPS%\go" "%GOSDK%\%GOFOLDER%"
