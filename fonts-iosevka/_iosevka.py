@@ -557,7 +557,7 @@ def walk(version, files):
             yield (path, ttc_dest)
 
 
-def extract_all(files):
+def extract_all(files, root_path=None):
     version = extract_version(files[0])
     print("Using version " + version.full)
     # files = takewhile(lambda p: extract_version(p) == version, files)
@@ -567,6 +567,8 @@ def extract_all(files):
     wq.start()
     try:
         for path, dest in walk(version, files):
+            if root_path:
+                dest = root_path / dest
             extract_to_dest(dest, path, queue)
     except Full:
         print("write thread failed!", file=sys.stderr)
@@ -600,12 +602,159 @@ def chwd(path):
         os.chdir(cwd)
 
 
-def extract():
-    if len(sys.argv) > 1:
-        for path in sys.argv[1:]:
-            with chwd(path) as wd:
-                print(f"# entering {wd}")
-                iosevka_extract()
-                print(f"# leaving {wd}")
+def extract(dest=None):
+    if dest:
+        with chwd(dest) as wd:
+            print(f"# entering {wd}")
+            iosevka_extract()
+            print(f"# leaving {wd}")
     else:
         iosevka_extract()
+
+
+#############################################################################
+### install fonts for user account on Windows
+
+import ctypes
+import ctypes.wintypes as wintypes
+
+# Load gdi32.dll
+gdi32 = ctypes.WinDLL("gdi32.dll")
+
+# Define constants
+FRINFO_DESCRIPTION = 1  # Query for font descriptions
+FRINFO_FONTNAMES = 2  # Query for font names
+FR_PRIVATE = 0x10
+
+# Function prototypes
+AddFontResourceExW = gdi32.AddFontResourceExW
+AddFontResourceExW.argtypes = [wintypes.LPCWSTR, wintypes.UINT, wintypes.LPVOID]
+AddFontResourceExW.restype = wintypes.INT
+
+RemoveFontResourceExW = gdi32.RemoveFontResourceExW
+RemoveFontResourceExW.argtypes = [wintypes.LPCWSTR, wintypes.UINT, wintypes.LPVOID]
+RemoveFontResourceExW.restype = wintypes.BOOL
+
+GetFontResourceInfoW = gdi32.GetFontResourceInfoW
+GetFontResourceInfoW.argtypes = [
+    wintypes.LPCWSTR,  # lpPathname (path to the font file)
+    ctypes.POINTER(ctypes.c_uint),  # cbBuffer (pointer to size of the buffer)
+    wintypes.LPVOID,  # lpBuffer (pointer to the buffer to receive information)
+    wintypes.DWORD,  # dwQueryType (type of information to retrieve)
+]
+GetFontResourceInfoW.restype = wintypes.BOOL
+
+
+def get_font_name_from_file(font_file_path):
+    font_file_path = str(font_file_path)
+    # Check if the font file exists
+    if not os.path.exists(font_file_path):
+        return []
+
+    # Load the font(s) from the file (works for both TTF and TTC)
+    loaded_fonts = AddFontResourceExW(font_file_path, FR_PRIVATE, None)
+    if loaded_fonts <= 0:
+        return []
+
+    font_name = []
+    try:
+        # Query the required buffer size for the font names
+        buffer_size = ctypes.c_uint(0)
+        result = GetFontResourceInfoW(
+            font_file_path, ctypes.byref(buffer_size), None, FRINFO_DESCRIPTION
+        )
+
+        if result:
+            # Allocate buffer to hold the font names
+            buffer = ctypes.create_unicode_buffer(buffer_size.value)
+
+            # Retrieve the font names
+            if GetFontResourceInfoW(
+                font_file_path, ctypes.byref(buffer_size), buffer, FRINFO_DESCRIPTION
+            ):
+                # Convert the buffer to a Python string
+                font_name = buffer.value
+    finally:
+        # Remove the font resource
+        RemoveFontResourceExW(font_file_path, FR_PRIVATE, None)
+
+    return font_name
+
+
+def set_registry_for_fonts(files, user_fonts_path):
+    import winreg
+
+    version = extract_version(files[0])
+    ttf_dest = Path("ttf-iosevka-" + version.full)
+    hkey = winreg.OpenKey(
+        winreg.HKEY_CURRENT_USER,
+        "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts",
+        access=winreg.KEY_SET_VALUE,
+    )
+    end = ""
+    try:
+        clear_eol = "\033[K"
+        for font_path in (user_fonts_path / ttf_dest).glob(
+            "*.ttf", case_sensitive=False
+        ):
+            font_name = get_font_name_from_file(font_path)
+            if font_name:
+                name = font_name + " (TrueType)"
+                print(f"{clear_eol}REGISTER: '{name}'", end="\r")
+                end = "\n"
+                winreg.SetValueEx(hkey, name, 0, winreg.REG_SZ, str(font_path))
+            else:
+                print(f"{clear_eol}REGISTER: name not found for '{font_path}'")
+    finally:
+        winreg.CloseKey(hkey)
+        print(end=end)
+
+
+def install(register_only=False):
+    # requires Python 3.12 for "case_sensitive" keyword argument
+    files = list(Path(".").glob("*ttf*iosevka*.zip", case_sensitive=False))
+    files = sorted(files, key=extract_version, reverse=True)
+    if not files:
+        die("no files found")
+
+    local_app_data = os.getenv("LOCALAPPDATA", "")
+    if not local_app_data:
+        local_app_data = os.path.expanduser("~/Local Settings/Application Data")
+    user_fonts = Path(local_app_data) / "Microsoft" / "Windows" / "Fonts"
+
+    if not register_only:
+        print(f"# installing font in {user_fonts}")
+        extract_all(files, root_path=user_fonts)
+    set_registry_for_fonts(files, user_fonts)
+
+    # Registry modification (pseudo-code in comments for reference)
+    # For TTC files, you would create a REG_SZ key in the registry under:
+    # HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\Fonts
+    # The key name should be "${fontName} (TrueType)" and the value should be the absolute path to the font.
+
+
+if __name__ == "__main__":
+    from argparse import ArgumentParser
+
+    parser = ArgumentParser(prog="_iosevka")
+    sub = parser.add_subparsers(help="choose one of commands")
+    # extract
+    extract_cmd = sub.add_parser("extract", help="extract zip files in current folder")
+    extract_cmd.add_argument("dest", nargs="?", help="optional destination path")
+    extract_cmd.set_defaults(func=extract)
+    # clean up
+    cleanup_cmd = sub.add_parser("cleanup", help="move in folders older revisions")
+    cleanup_cmd.set_defaults(func=clean_up)
+    # install
+    install_cmd = sub.add_parser("install", help="user install of fonts in registry")
+    install_cmd.add_argument(
+        "-r", "--register-only",
+        action="store_true",
+        help="only update registry for current installed fonts",
+    )
+    install_cmd.set_defaults(func=install)
+    #
+    args = parser.parse_args()
+    opts, func = vars(args), args.func
+    del opts["func"]
+    func(**opts)
