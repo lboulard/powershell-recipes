@@ -3,7 +3,7 @@ $ErrorActionPreference = "Stop"
 # https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
 # $VerbosePreference = "Continue"
 
-$tagPattern = "(?<tag>v(?<version>\d+\.\d+\.\d+))$"
+$tagPattern = "(?<tag>v(?<version>\d+\.\d+(?:\.\d+)?))$"
 $project = "notepad-plus-plus/notepad-plus-plus"
 
 Import-Module lboulard-Recipes
