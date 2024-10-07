@@ -5,6 +5,8 @@
 
 @ECHO.
 
+@CALL :python ..\Python3.14 3.14
+@IF ERRORLEVEL 1 GOTO :exit
 @CALL :python ..\Python3.13 3.13
 @IF ERRORLEVEL 1 GOTO :exit
 @CALL :python ..\Python3.12 3.12
