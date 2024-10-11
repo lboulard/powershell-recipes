@@ -15,10 +15,11 @@
 @PATH %RETVAL%;%PATH%
 
 :: do not use dosbatch, our script is killed
-clink_x64.exe installscripts "%~dp0"
+clink_x64.exe uninstallscripts --all
+clink_x64.exe installscripts "%~dp0\"
 clink_x64.exe installscripts "%~dp0clink-completions"
 clink_x64.exe installscripts "%~dp0clink-flex-prompt"
-clink_x64.exe installscripts "%~dp0clink-fzf"
+clink_x64.exe installscripts "%~dp0clink-gizmos"
 
 
 @:: Pause if not interactive
@@ -30,5 +31,5 @@ clink_x64.exe installscripts "%~dp0clink-fzf"
 @ENDLOCAL&EXIT /B %ERR%
 
 @:absolute
-@SET "RETVAL=%~dpf1"
+@SET "RETVAL=%~f1"
 @GOTO :EOF

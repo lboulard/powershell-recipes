@@ -1,4 +1,5 @@
 
 - https://github.com/vladimir-kotikov/clink-completions.git
 - https://github.com/chrisant996/clink-flex-prompt.git
-- https://github.com/chrisant996/clink-fzf.git
+- (removed, already in next repo) https://github.com/chrisant996/clink-fzf.git
+- https://github.com/chrisant996/clink-gizmos.git
