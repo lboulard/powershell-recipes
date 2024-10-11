@@ -16,3 +16,4 @@ BashTerminalOption=MinTTY
 PerformanceTweaksFSCache=Enabled
 UseCredentialManager=Core
 EnableSymlinks=Enabled
+DefaultBranchOption=master
