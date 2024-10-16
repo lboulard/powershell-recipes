@@ -16,9 +16,9 @@
 
 @ECHO.Refresh Font Chache
 net stop FontCache
-@SLEEP 1
+@timeout /t 1
 net start FontCache
-@SLEEP 1
+@timeout /t 1
 
 @ECHO.Broadcast a WM_FONTCHANGE message to all windows
 rundll32.exe user32.dll,SendMessageW 0xFFFF 0x001D 0 0
