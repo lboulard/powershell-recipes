@@ -3,3 +3,6 @@
 - https://github.com/chrisant996/clink-flex-prompt.git
 - (removed, already in next repo) https://github.com/chrisant996/clink-fzf.git
 - https://github.com/chrisant996/clink-gizmos.git
+
+Themes and Prompts:
+- https://github.com/chrisant996/clink-themes
