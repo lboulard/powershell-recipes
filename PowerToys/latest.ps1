@@ -12,5 +12,5 @@ Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
   @(
     "PowerToysUserSetup-$version-x64.exe"
     "PowerToysSetup-$version-x64.exe"
-  )
+  ) | ForEach-Object { "$($_)#$version/$($_)" }
 }
