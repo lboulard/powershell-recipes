@@ -1,3 +1,205 @@
+function canProgress {
+  [System.Console]::IsOutputRedirected -eq $false -and
+  $Host.Name -ne 'Windows PowerShell ISE Host'
+}
+
+function Start-Download ($url, $to, $headers) {
+  $progress = canProgress
+
+  try {
+    $url = handle_special_urls $url
+    Invoke-Download $url $to $header $progress
+  } catch {
+    $e = $_.exception
+    if ($e.Response.StatusCode -eq 'Unauthorized') {
+      warn 'Token might be misconfigured.'
+    }
+    if ($e.innerexception) { $e = $e.innerexception }
+    throw $e
+  }
+}
+
+# download with file size and progress indicator
+function Invoke-Download ($url, $to, $headers, $progress) {
+
+  $reqUrl = ($url -split '#')[0]
+  $wreq = [Net.WebRequest]::Create($reqUrl)
+
+  if ($wreq -is [Net.HttpWebRequest]) {
+    $wreq.UserAgent = Get-UserAgent
+    if (-not ($url -match 'sourceforge\.net' -or $url -match 'portableapps\.com')) {
+      $wreq.Referer = strip_filename $url
+    }
+    if ($url -match 'api\.github\.com/repos') {
+      $wreq.Accept = 'application/octet-stream'
+      $wreq.Headers['Authorization'] = "Bearer $(Get-GitHubToken)"
+      $wreq.Headers['X-GitHub-Api-Version'] = '2022-11-28'
+    }
+    if ($headers) {
+      foreach ($header in $headers.Keys) {
+        $wreq.Headers[$header] = $headers[$header]
+      }
+    }
+  }
+
+  try {
+    $wres = $wreq.GetResponse()
+  } catch [System.Net.WebException] {
+    $exc = $_.Exception
+    $handledCodes = @(
+      [System.Net.HttpStatusCode]::MovedPermanently, # HTTP 301
+      [System.Net.HttpStatusCode]::Found, # HTTP 302
+      [System.Net.HttpStatusCode]::SeeOther, # HTTP 303
+      [System.Net.HttpStatusCode]::TemporaryRedirect  # HTTP 307
+    )
+
+    # Only handle redirection codes
+    $redirectRes = $exc.Response
+    if ($handledCodes -notcontains $redirectRes.StatusCode) {
+      throw $exc
+    }
+
+    # Get the new location of the file
+    if ((-not $redirectRes.Headers) -or ($redirectRes.Headers -notcontains 'Location')) {
+      throw $exc
+    }
+
+    $newUrl = $redirectRes.Headers['Location']
+    Write-Host "Following redirect to $newUrl..."
+
+    # Handle manual file rename
+    if ($url -like '*#/*') {
+      $null, $postfix = $url -split '#/'
+      $newUrl = "$newUrl#/$postfix"
+    }
+
+    Invoke-Download $newUrl $to $cookies $progress
+    return
+  }
+
+  $total = $wres.ContentLength
+  if ($total -eq -1 -and $wreq -is [net.ftpwebrequest]) {
+    $total = ftp_file_size($url)
+  }
+
+  $lastModifiedDate = $wres.LastModified
+
+  if ($progress -and ($total -gt 0)) {
+    [console]::CursorVisible = $false
+    function Trace-DownloadProgress ($read) {
+      Write-DownloadProgress $read $total $url
+    }
+  } else {
+    Write-Host "Downloading $url ($(filesize $total))..."
+    function Trace-DownloadProgress {
+      #no op
+    }
+  }
+
+  try {
+    $s = $wres.GetResponseStream()
+    $fs = [IO.File]::OpenWrite($to)
+    $buffer = New-Object byte[] 2048
+    $totalRead = 0
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+
+    Trace-DownloadProgress $totalRead
+    while (($read = $s.Read($buffer, 0, $buffer.Length)) -gt 0) {
+      $fs.Write($buffer, 0, $read)
+      $totalRead += $read
+      if ($sw.ElapsedMilliseconds -gt 100) {
+        $sw.Restart()
+        Trace-DownloadProgress $totalRead
+      }
+    }
+    $sw.Stop()
+    Trace-DownloadProgress $totalRead
+
+    if ($lastModifiedDate) {
+      try {
+              (Get-Item $to).LastWriteTimeUtc = $lastModifiedDate
+      } catch {
+        Write-Error "Date: '$lastModified'"
+        Write-Error "$($_.Exception.Message)"
+      }
+    }
+
+  } finally {
+    if ($progress) {
+      [System.Console]::CursorVisible = $true
+      Write-Host
+    }
+    if ($fs) {
+      $fs.Close()
+    }
+    if ($s) {
+      $s.Close()
+    }
+    $wres.Close()
+  }
+}
+
+function Format-DownloadProgress ($url, $read, $total, $console) {
+  $filename = url_remote_filename $url
+
+  # calculate current percentage done
+  $p = [math]::Round($read / $total * 100, 0)
+
+  # pre-generate LHS and RHS of progress string
+  # so we know how much space we have
+  $left = "$filename ($(filesize $total))"
+  $right = [string]::Format('{0,3}%', $p)
+
+  # calculate remaining width for progress bar
+  $midwidth = $console.BufferSize.Width - ($left.Length + $right.Length + 8)
+
+  # calculate how many characters are completed
+  $completed = [math]::Abs([math]::Round(($p / 100) * $midwidth, 0) - 1)
+
+  # generate dashes to symbolise completed
+  if ($completed -gt 1) {
+    $dashes = [string]::Join('', ((1..$completed) | ForEach-Object { '=' }))
+  }
+
+  # this is why we calculate $completed - 1 above
+  $dashes += switch ($p) {
+    100 { '=' }
+    default { '>' }
+  }
+
+  # the remaining characters are filled with spaces
+  $spaces = switch ($dashes.Length) {
+    $midwidth { [string]::Empty }
+    default {
+      [string]::Join('', ((1..($midwidth - $dashes.Length)) | ForEach-Object { ' ' }))
+    }
+  }
+
+  "$left [$dashes$spaces] $right"
+}
+
+function Write-DownloadProgress ($read, $total, $url) {
+  $console = $host.UI.RawUI
+  $left = $console.CursorPosition.X
+  $top = $console.CursorPosition.Y
+  $width = $console.BufferSize.Width
+
+  if ($read -eq 0) {
+    $maxOutputLength = $(Format-DownloadProgress $url 100 $total $console).length
+    if (($left + $maxOutputLength) -gt $width) {
+      # not enough room to print progress on this line
+      # print on new line
+      Write-Host
+      $left = 0
+      $top = $top + 1
+      if ($top -gt $console.CursorPosition.Y) { $top = $console.CursorPosition.Y }
+    }
+  }
+
+  Write-Host $(Format-DownloadProgress $url $read $total $console) -NoNewline
+  [System.Console]::SetCursorPosition($left, $top)
+}
+
 function Get-Url() {
   param(
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ParameterSetName = "Url")]
@@ -39,20 +241,8 @@ function Get-Url() {
             $folders.Add($parent, $True)
           }
           $tmpFile = "$dest.tmp"
-          $result = Invoke-WebRequest -Uri "$src" -OutFile $tmpFile -Headers $Headers -UseBasicParsing -PassThru
-          $lastModified = $result.Headers['Last-Modified']
-          # PS7 returns array, PS5 returns string
-          if ($lastModified -is [array]) { $lastModified = $lastModified[0] }
-          if ($lastModified) {
-            try {
-              $lastModifiedDate = Get-Date $lastModified
-          (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
-            } catch {
-              Write-Error "Date: '$lastModified'"
-              Write-Error "$($_.Exception.Message)"
-            }
-          }
-          Move-Item -Path $tmpFile -Destination "$dest"
+          Start-Download $src $tmpFile $Headers
+          Move-Item -Path $tmpFile -Destination $dest
         } catch {
           Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
           break
