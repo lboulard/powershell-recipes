@@ -62,6 +62,7 @@ function AzulMetadata {
     "java_version=" + $JavaMajor
     "release_type=PSU"
     "latest=true"
+    "crac_supported=false"
     "page_size=1000"
     "include_fields=os,lib_c_type,arch,hw_bitness,java_package_type,archive_type,javafx_bundled,sha256_hash"
   ) -Join "&"
@@ -161,6 +162,7 @@ $files = $packages.Keys | Sort-Object -Descending | ForEach-Object {
     $packages[$downloadProfile].Keys | Sort-Object | ForEach-Object {
       $javaMajor = $_
       $metadata = AzulMetadata $javaMajor
+      # ($metadata | ConvertTo-Json | Set-Content "${downloadProfile}.${JavaMajor}.json")
       if ($metadata) {
         ZuluFilter -AzulResponse $metadata -Config $packages[$downloadProfile][$javaMajor]
       } else {
