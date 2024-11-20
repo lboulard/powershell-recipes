@@ -25,20 +25,18 @@ function Invoke-Download ($url, $to, $headers, $progress) {
   $reqUrl = ($url -split '#')[0]
   $wreq = [Net.WebRequest]::Create($reqUrl)
 
-  if ($wreq -is [Net.HttpWebRequest]) {
-    $wreq.UserAgent = Get-UserAgent
-    if (-not ($url -match 'sourceforge\.net' -or $url -match 'portableapps\.com')) {
-      $wreq.Referer = strip_filename $url
-    }
-    if ($url -match 'api\.github\.com/repos') {
-      $wreq.Accept = 'application/octet-stream'
-      $wreq.Headers['Authorization'] = "Bearer $(Get-GitHubToken)"
-      $wreq.Headers['X-GitHub-Api-Version'] = '2022-11-28'
-    }
-    if ($headers) {
-      foreach ($header in $headers.Keys) {
-        $wreq.Headers[$header] = $headers[$header]
-      }
+  $wreq.UserAgent = Get-UserAgent
+  if (-not ($url -match 'sourceforge\.net' -or $url -match 'portableapps\.com')) {
+    $wreq.Referer = strip_filename $url
+  }
+  if ($url -match 'api\.github\.com/repos') {
+    $wreq.Accept = 'application/octet-stream'
+    $wreq.Headers['Authorization'] = "Bearer $(Get-GitHubToken)"
+    $wreq.Headers['X-GitHub-Api-Version'] = '2022-11-28'
+  }
+  if ($headers) {
+    foreach ($header in $headers.Keys) {
+      $wreq.Headers[$header] = $headers[$header]
     }
   }
 
@@ -78,11 +76,10 @@ function Invoke-Download ($url, $to, $headers, $progress) {
   }
 
   $total = $wres.ContentLength
-  if ($total -eq -1 -and $wreq -is [net.ftpwebrequest]) {
-    $total = ftp_file_size($url)
+  $lastModifiedHeader = $wres.Headers.Get("Last-Modified")
+  if ($lastModifiedHeader) {
+    $lastModifiedDate = [System.DateTime]::Parse($lastModifiedHeader)
   }
-
-  $lastModifiedDate = $wres.LastModified
 
   if ($progress -and ($total -gt 0)) {
     [console]::CursorVisible = $false
@@ -115,15 +112,6 @@ function Invoke-Download ($url, $to, $headers, $progress) {
     $sw.Stop()
     Trace-DownloadProgress $totalRead
 
-    if ($lastModifiedDate) {
-      try {
-              (Get-Item $to).LastWriteTimeUtc = $lastModifiedDate
-      } catch {
-        Write-Error "Date: '$lastModified'"
-        Write-Error "$($_.Exception.Message)"
-      }
-    }
-
   } finally {
     if ($progress) {
       [System.Console]::CursorVisible = $true
@@ -131,6 +119,16 @@ function Invoke-Download ($url, $to, $headers, $progress) {
     }
     if ($fs) {
       $fs.Close()
+
+      if ($lastModifiedDate) {
+        try {
+          [System.IO.File]::SetLastWriteTime($to, $lastModifiedDate)
+        } catch {
+          Write-Error "Date: '$lastModified'"
+          Write-Error "$($_.Exception.Message)"
+        }
+      }
+
     }
     if ($s) {
       $s.Close()
