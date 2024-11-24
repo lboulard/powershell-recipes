@@ -8,6 +8,7 @@ $index = "https://www.irfanview.com/64bit.htm"
 Import-Module lboulard-Recipes
 
 $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+$userAgent = 'Download/Powershell 5.1'
 try {
   $html = Invoke-WebRequest -Uri $index -UseBasicParsing -UserAgent $userAgent
 } catch {
@@ -44,20 +45,52 @@ $destDir = "irfanview-${version}"
 # https://github.com/microsoft/winget-pkgs/tree/master/manifests/i/IrfanSkiljan/IrfanView
 # zip installer is not found on TechSoft downloads
 
-$files = @(
-  "https://files03.tchspt.com/down/iview${cleanVersion}_x64_setup.exe"
-  "https://files02.tchspt.com/down/iview${cleanVersion}_plugins_x64_setup.exe"
-  # "https://files02.tchspt.com/down/iview${cleanVersion}_x64.zip"
-  # "https://files02.tchspt.com/down/iview${cleanVersion}_plugins_x64.zip"
-) | ForEach-Object {
-  $url = [System.Uri]($_)
-  $filename = [Uri]::UnescapeDataString($url.Segments[-1])
-  "${url}#${destDir}/${filename}"
+if ($false) {
+
+  $files = @(
+    # "https://files03.tchspt.com/down/iview${cleanVersion}_x64_setup.exe"
+    "https://files02.tchspt.com/down/iview${cleanVersion}_x64_setup.exe"
+    "https://files02.tchspt.com/down/iview${cleanVersion}_plugins_x64_setup.exe"
+    # "https://files02.tchspt.com/down/iview${cleanVersion}_x64.zip"
+    # "https://files02.tchspt.com/down/iview${cleanVersion}_plugins_x64.zip"
+  ) | ForEach-Object {
+    $url = [System.Uri]($_)
+    $filename = [Uri]::UnescapeDataString($url.Segments[-1])
+    "${url}#${destDir}/${filename}"
+  }
+
+  # Direct download does not work
+  Get-Url $files -Headers @{
+    'User-Agent' = $userAgent
+    'Referer'    = 'https://www.techspot.com/'
+  }
 }
 
-Get-Url $files -Headers @{
-  'User-Agent' = $userAgent
+# https://www.fosshub.com/IrfanView.html?dwl=iview470_x64_setup.exe
+# https://www.fosshub.com/IrfanView.html?dwl=iview470_plugins_x64_setup.exe
+
+# Create URL file to downloads
+
+@(
+  "iview${cleanVersion}_x64_setup.exe"
+  "iview${cleanVersion}_plugins_x64_setup.exe"
+) | ForEach-Object {
+  $filename = $_
+  $basename = Split-Path -Path $filename -LeafBase
+  @{
+    'url'      = "https://www.fosshub.com/IrfanView.html?dwl=${filename}"
+    'shortCut' = "${destDir}/${basename}.url"
+  }
+} | ForEach-Object {
+  $url = $_.url
+  $shortCut = $_.shortCut
+  Write-Host "# ${shortCut}"
+  @(
+    "[InternetShortcut]"
+    "URL=${url}"
+  ) | Set-Content -Path $shortCut
 }
+
 
 $checksums.GetEnumerator() | ForEach-Object {
   $filename = $_.Name
