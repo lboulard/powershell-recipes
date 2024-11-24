@@ -18,7 +18,7 @@ ECHO ON
 @IF ERRORLEVEL 1 GOTO :exit
 
 "%PWSH%" -NoProfile -Command^
- "& '.\%~n0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jdk8,jdk17 -JDK -Arch amd64 -OpenFX"
+ "& '.\%~n0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jdk8,jdk11,jdk17 -JDK -Arch amd64 -OpenFX"
 @IF ERRORLEVEL 1 GOTO :exit
 
 :exit
