@@ -50,13 +50,13 @@ $html = Get-HTML -Uri $pythonFTP
 $url = [System.Uri]$pythonFTP
 
 $links = @()
-$html.links | % { $_.pathname } | ForEach-Object {
+$html.links | ForEach-Object { $_.pathname } | ForEach-Object {
   if ($_ -match $branchRegex) {
     @{target = $_; version = [version]$Matches.version }
   }
 } | Sort-Object -Descending -Property {
   $_.version
-}, { $_ } | % { $_.target } | ForEach-Object {
+}, { $_ } |  ForEach-Object { $_.target } | ForEach-Object {
   (New-Object System.Uri -ArgumentList $url, $_).AbsoluteUri
 } | ForEach-Object {
   Write-Verbose "Reading $_"
@@ -94,10 +94,14 @@ if ($mainVersion -le [version]"3.0.0") {
     "python-$lastVersion.amd64.msi"
     "python-$lastVersion.amd64.msi.asc"
   )
-} else {
+} elseif ($mainVersion -lt [version]"3.14.0") {
   $files = @(
     "python-$lastVersion-amd64.exe"
     "python-$lastVersion-amd64.exe.asc"
+  )
+} else {
+  $files = @(
+    "python-$lastVersion-amd64.exe"
   )
 }
 if ($mainVersion -ge [version]"3.10.0") {
