@@ -5,10 +5,13 @@ $ErrorActionPreference = "Stop"
 
 # https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/LLVM-19.1.0-win64.exe
 # https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/LLVM-19.1.0-Windows-X64.tar.xz
+# https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.6/clang+llvm-19.1.6-x86_64-pc-windows-msvc.tar.xz
 
 $project = "llvm/llvm-project"
 $tagPattern = "(?<tag>llvmorg-(?<version>\d+\.\d+(\.\d+)+))"
-$wanted = "^LLVM-\d+(.\d+)+-[wW]in(dows-[xX])?64(\.exe|\.tar\..+)(\.sig|\.asc)?$"
+$wanted = @(
+  "^LLVM-\d+(.\d+)+-[wW]in(dows-[xX])?64(\.exe|\.tar\..+)(\.sig|\.asc)?$"
+  "^clang\+llvm-\d+(.\d+)+-x86_64-pc-windows-msvc(?:\.7z|\.tar\.xz)(?:\.sig)?$") -join "|"
 
 $nameMangle = {
   # manipulate $name, $version and $tag are accessible from tag pattern parsing
