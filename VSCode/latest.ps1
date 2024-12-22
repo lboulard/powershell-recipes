@@ -109,16 +109,16 @@ function url_remote_filename($url) {
 }
 
 function filesize($length) {
-  $gb = [math]::pow(2, 30)
-  $mb = [math]::pow(2, 20)
-  $kb = [math]::pow(2, 10)
+  $gb = [int64]1000000000
+  $mb = [int64]1000000
+  $kb = [int64]1000
 
   if ($length -gt $gb) {
-    "{0:n1} GB" -f ($length / $gb)
+    "{0:n1}GB" -f ($length / $gb)
   } elseif ($length -gt $mb) {
-    "{0:n1} MB" -f ($length / $mb)
+    "{0:n1}MB" -f ($length / $mb)
   } elseif ($length -gt $kb) {
-    "{0:n1} KB" -f ($length / $kb)
+    "{0:n1}KB" -f ($length / $kb)
   } else {
     if ($null -eq $length) {
       $length = 0
@@ -184,7 +184,7 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
       $newUrl = "$newUrl#/$postfix"
     }
 
-    Invoke-Download $newUrl $to $cookies $progress $outdir
+    Invoke-Download $newUrl $to $headers $progress $outdir
     return
   }
 
@@ -218,63 +218,69 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
     $lastModifiedDate = [System.DateTime]::Parse($lastModifiedHeader)
   }
 
+  Write-Host "Downloading $url ($(filesize $total))..."
+  # if ($url -cne $wres.ResponseUri) {
+  #   Write-Host " ->" $wres.ResponseUri
+  # }
   if ($progress -and ($total -gt 0)) {
+    $name = ($wres.ResponseUri -split "/")[-1]
     [console]::CursorVisible = $false
-    function Trace-DownloadProgress ($read) {
-      Write-DownloadProgress $read $total $url
+    function Trace-DownloadProgress ($read, $last = $false) {
+      & $progress $read $total $name $last
     }
   } else {
-    Write-Host "Downloading $url ($(filesize $total))..."
     function Trace-DownloadProgress {
       #no op
     }
   }
 
-  Write-Host " -> $to"
-  $parent = Split-Path -Parent -Path $to
+  $fullPath = Join-Path (Resolve-Path ".") $to
+  Write-Host " ->" $to
+  $parent = Split-Path -Parent -Path $fullPath
   if ($parent) {
     if (-not (Test-Path $parent -PathType Container)) {
       New-Item -Path $parent -ItemType Container | Out-Null
     }
   }
 
-  try {
-    if ($total -gt 0) {
-      if (file_match $to $total $lastModifiedDate) {
-        Write-Host " -> already downloaded"
-        return
-      }
+  if ($total -gt 0) {
+    if (file_match $fullPath $total $lastModifiedDate) {
+      Write-Host " -> already downloaded"
+      $wres.GetResponseStream().Close()
+      $wres.Close()
+      return
     }
+  }
+
+  try {
 
     $s = $wres.GetResponseStream()
-    $fs = [IO.File]::OpenWrite($to)
+    $fs = [IO.File]::OpenWrite($fullPath)
     $buffer = New-Object byte[] 4096
     $totalRead = 0
-    $sw = [System.Diagnostics.Stopwatch]::StartNew()
 
     Trace-DownloadProgress $totalRead
     while (($read = $s.Read($buffer, 0, $buffer.Length)) -gt 0) {
       $fs.Write($buffer, 0, $read)
       $totalRead += $read
-      if ($sw.ElapsedMilliseconds -gt 100) {
-        $sw.Restart()
-        Trace-DownloadProgress $totalRead
-      }
+      Trace-DownloadProgress $totalRead
     }
-    $sw.Stop()
-    Trace-DownloadProgress $totalRead
 
   } finally {
     if ($progress) {
+      if ($totalRead -lt $total) {
+        Trace-DownloadProgress $totalRead $true
+      }
+      Write-Host "`n"
       [System.Console]::CursorVisible = $true
-      Write-Host
     }
+
     if ($fs) {
       $fs.Close()
 
       if ($lastModifiedDate) {
         try {
-          [System.IO.File]::SetLastWriteTime($to, $lastModifiedDate)
+          [System.IO.File]::SetLastWriteTime($fullPath, $lastModifiedDate)
         } catch {
           Write-Error "Date: '$lastModified'"
           Write-Error "$($_.Exception.Message)"
@@ -288,6 +294,69 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   }
 }
 
+$script:refreshTime = New-TimeSpan -Start 0
+$refreshDelay = [timespan]::FromMilliseconds(1000 / 10)
+
+function progress($length, $size, $prefix, $last = $false) {
+  if ($length -ge $size) { $last = $true }
+  if (-not $last) {
+    $time = New-TimeSpan -Start 0
+    if ($time -lt $refreshTime) {
+      return
+    }
+    $script:refreshTime = $time.Add($refreshDelay)
+  }
+
+  @(
+    " "
+    $prefix
+    " {0,7} of {1,7}" -f ($(filesize $length), $(filesize $size))
+  ) | Write-Host -NoNewline
+
+  $foreGround = $(if ($length -lt $size) { 'Yellow' } else { 'Green' })
+  Write-Host -NoNewline -ForegroundColor $foreGround $(if ($last) {
+      "  {0:P} *" -f ($length / $size)
+    } else {
+      "  {0:P} >" -f ($length / $size)
+    }) "`r"
+}
+
+function test_progress($prefix, $size, $progress) {
+  $i = 0
+  try {
+    [System.Console]::CursorVisible = $false
+    $step = Get-Random -Minimum 3000 -Maximum 5000
+    for ($i = 0; $i -lt $size; $i += $step) {
+      & $progress $i $size $prefix
+      Start-Sleep -Milliseconds ($step / 2000)
+      $step = Get-Random -Minimum 3000 -Maximum 5000
+    }
+    # last display
+    if ($i -ge $size) {
+      & $progress $size $size $prefix
+    }
+  } finally {
+    # Force refresh when interrupted
+    if ($i -lt $size) {
+      & $progress $i $size $prefix $true
+    }
+    Write-Host
+    [System.Console]::CursorVisible = $true
+  }
+}
+
+# test_progress download.zip (1 -shl 21) progress
+
+function canProgress {
+  [System.Console]::IsOutputRedirected -eq $false -and
+  $Host.Name -ne 'Windows PowerShell ISE Host'
+}
+
+$progressFunc = $null
+if (canProgress) {
+  $progressFunc = $function:progress
+}
+
 $links = @(
   "${downloadURL}/${version}/win32-x64-user/stable"
   "${downloadURL}/${version}/win32-x64-archive/stable"
@@ -296,5 +365,5 @@ $links = @(
 )
 
 foreach ($url in $links) {
-  Invoke-Download $url $null $null $null $version
+  Invoke-Download $url $null $null $progressFunc $version
 }
