@@ -211,7 +211,7 @@ function Get-GitHubReleases() {
     while ($url -and ($pageNumber -lt $MaxPages)) {
       $pageNumber += 1
       Write-Verbose "GitHub releases page ${pageNumber}/${maxPages}"
-      $result = Invoke-GitHubApi -Url $url -Token $githubToken
+      $result = Invoke-GitHubApi -Url $url -Token $Token
       $link = Get-GitHubLinks ($result.Headers['Link'])
       $next = if ($link) { $link.next }
 
@@ -250,7 +250,7 @@ function Find-GitHubRelease() {
     [ScriptBlock]$Cont = $null
   )
 
-  Get-GitHubReleases -Project $project -Token $githubToken -MaxPages $MaxPages -Continue {
+  Get-GitHubReleases -Project $project -Token $Token -MaxPages $MaxPages -Continue {
     if ($urls) {
       if ($Cont) {
         . $Cont
@@ -315,6 +315,7 @@ function Find-GitHubReleaseFromAsset() {
 
   Find-GitHubRelease -Project $Project -TagPattern $TagPattern `
     -MaxPages $MaxPages -ReleaseScript $ReleaseScript -Cont $Continue `
+    -Token $Token -PreRelease $PreRelease `
     -Filter {
     $release.assets | ForEach-Object {
       $asset = $_
