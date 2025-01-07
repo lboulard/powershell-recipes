@@ -235,7 +235,7 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   }
 
   $fullPath = Join-Path (Resolve-Path ".") $to
-  Write-Host " ->" $to
+  Write-Host " # ${to}"
   $parent = Split-Path -Parent -Path $fullPath
   if ($parent) {
     if (-not (Test-Path $parent -PathType Container)) {
@@ -245,7 +245,6 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
 
   if ($total -gt 0) {
     if (file_match $fullPath $total $lastModifiedDate) {
-      Write-Host " -> already downloaded"
       $wres.GetResponseStream().Close()
       $wres.Close()
       return
