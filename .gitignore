@@ -1,0 +1,11 @@
+*~
+*.bak
+*.orig
+*.sw[a-z]
+\#*\#
+
+/.env.*
+/.env
+
+/recipes-to-repo.bat
+/recipes-to-bcomp.bat

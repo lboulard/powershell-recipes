@@ -1,0 +1,3 @@
+*.bat                   eol=crlf
+*.cmd                   eol=crlf
+*.json                  eol=lf
