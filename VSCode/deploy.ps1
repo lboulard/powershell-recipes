@@ -73,7 +73,7 @@ try {
 
   # create symbolic link
   $symlink = Join-Path $installDir "VSCode"
-  $target = "$basename"
+  $target = $basename
 
   Push-Location $installDir
   try {
@@ -95,7 +95,7 @@ try {
     }
 
     if ($update) {
-      New-Item -Path $symlink -ItemType SymbolicLink -Value $target -Force | Out-Null
+      New-Item -ItemType SymbolicLink -Path $symlink -Target ".\$target" | Out-Null
     } else {
       Write-Host " (no change)" -ForegroundColor DarkYellow -NoNewLine
     }
