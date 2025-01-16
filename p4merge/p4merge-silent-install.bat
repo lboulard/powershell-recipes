@@ -1,7 +1,7 @@
 :: https://community.perforce.com/s/article/17304
 @SETLOCAL
 
-@SET DIR=p4-2024.3
+@SET DIR=p4-2024.4
 
 @IF NOT EXIST %DIR% CD /D %~dp0
 @IF "%1"=="uninstall" GOTO :Uninstall
