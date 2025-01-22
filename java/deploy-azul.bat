@@ -14,7 +14,7 @@ IF NOT EXIST "%INSTALL_PATH%\." MD "%INSTALL_PATH%"
 ECHO ON
 
 "%PWSH%" -NoProfile -Command^
- "& '.\%~n0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jre8 -JRE -Arch x86"
+ "& '.\%~n0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jre8 -JRE -Arch x86 -OpenFX"
 @IF ERRORLEVEL 1 GOTO :exit
 
 "%PWSH%" -NoProfile -Command^
