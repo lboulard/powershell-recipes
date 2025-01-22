@@ -177,10 +177,13 @@ file "$ROOT\cmd\watchexec\latest.ps1"                                  watchexec
 
 file "$ROOT\cmd\WezTerm\latest.bat"                                    WezTerm
 file "$ROOT\cmd\WezTerm\latest.ps1"                                    WezTerm
+file "$ROOT\cmd\WezTerm\nightly.bat"                                   WezTerm
+file "$ROOT\cmd\WezTerm\nightly.ps1"                                   WezTerm
 file "$ROOT\cmd\WezTerm\gen-wezterm-inf.bat"                           WezTerm
 file "$ROOT\cmd\WezTerm\gen-wezterm-inf.ps1"                           WezTerm
 file "$ROOT\cmd\WezTerm\gen-wezterm-reg.bat"                           WezTerm
 file "$ROOT\cmd\WezTerm\gen-wezterm-reg.ps1"                           WezTerm
+file "$ROOT\cmd\WezTerm\OpenWezTermHereRemove.reg"                     WezTerm
 
 file "$ROOT\cmd\Win32-OpenSSH\latest.bat"                              Win32-OpenSSH
 file "$ROOT\cmd\Win32-OpenSSH\latest.ps1"                              Win32-OpenSSH
