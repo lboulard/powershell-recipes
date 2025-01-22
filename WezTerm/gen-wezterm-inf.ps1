@@ -1,9 +1,17 @@
 # Create registry file from $LBHOME/Scoop installation variable
 
 $destFile = ".\OpenWezTermHere.inf"
-$scoopRoot = $ENV:LBHOME + "\Scoop"
+$scoopInstallPath = $ENV:LBHOME + "\Scoop\apps\wezterm\current"
+$lbProgramInstallPath = $ENV:LBPROGRAMS + "\Apps\Wezterm"
+if (Test-Path $scoopInstallPath) {
+  $installPath = $scoopInstallPath
+} elseif (Test-Path $lbProgramInstallPath) {
+  $installPath = $lbProgramInstallPath
+} else {
+  throw "WezTerm install not found"
+}
 
-$cmdPath = $scoopRoot + "\apps\wezterm\current\wezterm-gui.exe"
+$cmdPath = $installPath + "\wezterm-gui.exe"
 $cmd = "`"`"{0}`"`"  start --domain local --attach --no-auto-connect --cwd `"`"%V`"`"" -f $cmdPath
 
 # args <display name>, <short name for inf>, <command>

@@ -1,7 +1,16 @@
 # Create registry file from $LBHOME/Scoop installation variable
 
 $registryFilePath = ".\OpenWezTermHere.reg"
-$scoopRoot = $ENV:LBHOME + "\Scoop"
+$scoopInstallPath = $ENV:LBHOME + "\Scoop\apps\wezterm\current"
+$lbProgramInstallPath = $ENV:LBPROGRAMS + "\Apps\Wezterm"
+if (Test-Path $scoopInstallPath) {
+  $installPath = $scoopInstallPath
+} elseif (Test-Path $lbProgramInstallPath) {
+  $installPath = $lbProgramInstallPath
+} else {
+  throw "WezTerm install not found"
+}
+$cmdPath = $installPath + "\wezterm-gui.exe"
 
 $shellTemplate = @"
 [HKEY_CLASSES_ROOT\{0}\shell\WezTermHere]
@@ -17,8 +26,6 @@ Windows Registry Editor Version 5.00
 
 {0}
 "@
-
-$cmdPath = $scoopRoot + "\apps\wezterm\current\wezterm-gui.exe"
 
 $reg = @(
  ($shellTemplate -f "Drive", ($cmdPath -replace '\\', '\\')),

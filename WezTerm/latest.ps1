@@ -16,4 +16,6 @@ Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
     "WezTerm-$version-setup.exe"
     "WezTerm-$version-setup.exe.sha256"
   )
+} -NameMangle {
+  "${version}/${name}"
 }
