@@ -65,6 +65,17 @@ $maintained = $releases | ForEach-Object {
   } | Sort-Object -Descending Name | Select-Object -First 1
 } | Select-Object -ExpandProperty "Group"
 
+# all .exe have .zip
+$maintained = $maintained | ForEach-Object {
+  $_
+  if ($_.Release -match "\.exe$") {
+    $copy = $_.PSObject.Copy()
+    $copy.href = ($_.href -replace "\.exe$", ".zip")
+    $copy.Release = ($_.Release -replace "\.exe$", ".zip")
+    $copy
+  }
+}
+
 # Extract files to download (only latest maintained versions)
 # last version is downloaded in current folder
 # other version are downloaded in "$version" folder
