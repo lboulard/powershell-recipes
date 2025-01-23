@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 $project = "elixir-lang/elixir"
 $tagPattern = "/(?<tag>v(?<version>\d+\.\d+(\.\d+){0,2}))$"
 
-$wanted = "elixir-otp-(?:2[67])\.exe"
+$wanted = "elixir-otp-(?:2[67])\.(?:exe|zip)"
 $wanted = "(${wanted})|(Docs\.zip)"
 $wanted = "^(${wanted})(\.sha256sum)?$"
 
