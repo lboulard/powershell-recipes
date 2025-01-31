@@ -6,7 +6,7 @@ SET VERSION=notfound
 SET PRG=
 FOR %%f IN ("Git-*-64-bit.exe") DO (
   FOR /F "tokens=2 delims=-" %%s IN ("%%f") DO (
-    FOR /F "tokens=1-3 delims=." %%i IN ("%%s") DO CALL :version "%%i" "%%j" "%%k" "%%f"
+    FOR /F "tokens=1-4 delims=." %%i IN ("%%s") DO CALL :version "%%i" "%%j" "%%k" "%%l" "%%f"
   )
 )
 
@@ -63,15 +63,16 @@ GOTO :exit
 SET "X=000000000%~1"
 SET "Y=000000000%~2"
 SET "Z=000000000%~3"
-SET "__VERSION=%X:~-8%.%Y:~-8%.%Z:~-8%"
+SET "BUILD=000000000%~4"
+SET "__VERSION=%X:~-8%.%Y:~-8%.%Z:~-8%%BUILD:~-8%"
 IF %VERSION%==notfound GOTO :update
 IF %__VERSION% GTR %_VERSION% GOTO :update
 GOTO :EOF
 
 :update
 SET "_VERSION=%__VERSION%"
-SET "VERSION=%~1.%~2.%~3"
-SET "PRG=%~4"
+SET "VERSION=%~1.%~2.%~3.%~4"
+SET "PRG=%~5"
 GOTO :EOF
 
 :exit
