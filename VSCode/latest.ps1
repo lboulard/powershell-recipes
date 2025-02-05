@@ -127,12 +127,12 @@ function filesize($length) {
   }
 }
 
-function file_match($dest, $size, $lastModified) {
+function file_up_to_date($dest, $size, $lastModified) {
   $fileInfo = [System.IO.FileInfo]::new($dest)
   if ($fileInfo.Exists) {
     if ($fileInfo.Length -eq $size) {
       if ($lastModified) {
-        return $fileInfo.LastWriteTime -eq $lastModified
+        return $fileInfo.LastWriteTime -le $lastModified
       }
       return $true
     }
@@ -140,11 +140,36 @@ function file_match($dest, $size, $lastModified) {
   return $false
 }
 
+function last_modifed_time($dest) {
+  $fileInfo = [System.IO.FileInfo]::new($dest)
+  if ($fileInfo.Exists) {
+    return $fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss \G\M\T")
+  }
+  return $null
+}
+
 # download with file size and progress indicator
 function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
 
   $reqUrl = ($url -split '#')[0]
   $wreq = [Net.WebRequest]::Create($reqUrl)
+
+  if (-not $to) {
+    $reqName = ($url -split '#')[1]
+    if ($reqName) {
+      $to = $reqName.Trim("/")
+    }
+  }
+
+  if ($to -and ($headers -notcontains "If-Modified-Since")) {
+    $lastModifiedDate = last_modifed_time $to
+    if ($lastModifiedDate) {
+      if ($null -eq $headers) {
+        $headers = @{}
+      }
+      $headers["If-Modified-Since"] = $lastModifiedDate
+    }
+  }
 
   # $wreq.UserAgent = Get-UserAgent
   if ($headers) {
@@ -157,6 +182,18 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
     $wres = $wreq.GetResponse()
   } catch [System.Net.WebException] {
     $exc = $_.Exception
+
+    # On presence of If-Modified-Since header, we can receive 304 response
+    if ($exc.Response.StatusCode -eq [System.Net.HttpStatusCode]::NotModified) {
+      Write-Host "Downloading $url"
+      if ($to) {
+        Write-Host " # $to (not modified)"
+      } else {
+        Write-Host " # Not modified"
+      }
+      return
+    }
+
     $handledCodes = @(
       [System.Net.HttpStatusCode]::MovedPermanently, # HTTP 301
       [System.Net.HttpStatusCode]::Found, # HTTP 302
@@ -189,16 +226,10 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   }
 
   if (-not $to) {
-    $reqName = ($url -split '#')[1]
-    if ($reqName) {
-      $to = $reqName.Trim("/")
-    }
-    if (-not $to) {
-      $contentDisposition = $wres.Headers['Content-Disposition']
-      if ($contentDisposition) {
-        $filename = Read-ContentDispositionFilename $contentDisposition
-        $to = ($filename.Trim(".") -split "/")[-1]
-      }
+    $contentDisposition = $wres.Headers['Content-Disposition']
+    if ($contentDisposition) {
+      $filename = Read-ContentDispositionFilename $contentDisposition
+      $to = ($filename.Trim(".") -split "/")[-1]
     }
     if (-not $to) {
       $to = url_remote_filename "$url"
@@ -216,6 +247,8 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   $lastModifiedHeader = $wres.Headers.Get("Last-Modified")
   if ($lastModifiedHeader) {
     $lastModifiedDate = [System.DateTime]::Parse($lastModifiedHeader)
+  } else {
+    $lastModifiedDate = $null
   }
 
   Write-Host "Downloading $url ($(filesize $total))..."
@@ -223,10 +256,9 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   #   Write-Host " ->" $wres.ResponseUri
   # }
   if ($progress -and ($total -gt 0)) {
-    $name = ($wres.ResponseUri -split "/")[-1]
     [console]::CursorVisible = $false
     function Trace-DownloadProgress ($read, $last = $false) {
-      & $progress $read $total $name $last
+      & $progress $read $total $to $last
     }
   } else {
     function Trace-DownloadProgress {
@@ -236,6 +268,10 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
 
   $fullPath = Join-Path (Resolve-Path ".") $to
   Write-Host " # ${to}"
+  if ($lastModifiedDate) {
+    Write-Host " # Last modified time: $lastModifiedDate"
+  }
+  
   $parent = Split-Path -Parent -Path $fullPath
   if ($parent) {
     if (-not (Test-Path $parent -PathType Container)) {
@@ -244,7 +280,7 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   }
 
   if ($total -gt 0) {
-    if (file_match $fullPath $total $lastModifiedDate) {
+    if (file_up_to_date $fullPath $total $lastModifiedDate) {
       $wres.GetResponseStream().Close()
       $wres.Close()
       return
@@ -272,6 +308,12 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
       }
       Write-Host "`n"
       [System.Console]::CursorVisible = $true
+    }
+    if ($totalRead -gt $total) {
+      @(
+        " ** WARNING more data than expected`n"
+        "    $totalRead bytes read ($(filesize $totalRead))"
+        ", expected $read bytes ($(filesize $tota))") | Write-Host
     }
 
     if ($fs) {
