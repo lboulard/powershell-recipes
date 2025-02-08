@@ -132,7 +132,7 @@ function file_up_to_date($dest, $size, $lastModified) {
   if ($fileInfo.Exists) {
     if ($fileInfo.Length -eq $size) {
       if ($lastModified) {
-        return $fileInfo.LastWriteTime -le $lastModified
+        return $fileInfo.LastWriteTime -ge $lastModified
       }
       return $true
     }
@@ -141,7 +141,7 @@ function file_up_to_date($dest, $size, $lastModified) {
 }
 
 function last_modifed_time($dest) {
-  $fileInfo = [System.IO.FileInfo]::new($dest)
+  $fileInfo = Get-Item $dest
   if ($fileInfo.Exists) {
     return $fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss \G\M\T")
   }
@@ -158,6 +158,9 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
     $reqName = ($url -split '#')[1]
     if ($reqName) {
       $to = $reqName.Trim("/")
+      if ($to -and $outdir) {
+        $to = Join-Path $outdir $to
+      }
     }
   }
 
@@ -237,10 +240,9 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
     if (-not $to) {
       throw "failed to obtain a filename"
     }
-  }
-
-  if ($outdir) {
-    $to = Join-Path $outdir $to
+    if ($outdir) {
+      $to = Join-Path $outdir $to
+    }
   }
 
   $total = $wres.ContentLength
