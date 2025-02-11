@@ -24,6 +24,8 @@ file "$ROOT\dev\Python3.12\fix-broken-pip\install-pip.bat"             Python\fi
 
 file "$ROOT\dev\erlang\latest.bat"                                     erlang
 file "$ROOT\dev\erlang\latest.ps1"                                     erlang
+file "$ROOT\dev\erlang\deploy.bat"                                     erlang
+file "$ROOT\dev\erlang\deploy.ps1"                                     erlang
 file "$ROOT\dev\erlang\Erlang Programming Language.url"                erlang
 file "$ROOT\dev\erlang\OTP Versions Tree.url"                          erlang
 
