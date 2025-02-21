@@ -289,3 +289,7 @@ file "$ROOT\WWW\caddy\latest.ps1"                                      Caddy
 file "$ROOT\WWW\Vivaldi\latest.bat"                                    Vivaldi
 file "$ROOT\WWW\Vivaldi\latest.ps1"                                    Vivaldi
 file "$ROOT\WWW\Vivaldi\Vivaldi Browser — Windows.url"                 Vivaldi
+
+file "$ROOT\CAD\KiCad\latest.bat"                                      KiCad
+file "$ROOT\CAD\KiCad\latest.ps1"                                      KiCad
+file "$ROOT\CAD\KiCad\www.kicad.org.url"                               KiCad
