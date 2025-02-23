@@ -181,6 +181,8 @@ file "$ROOT\cmd\WezTerm\latest.bat"                                    WezTerm
 file "$ROOT\cmd\WezTerm\latest.ps1"                                    WezTerm
 file "$ROOT\cmd\WezTerm\nightly.bat"                                   WezTerm
 file "$ROOT\cmd\WezTerm\nightly.ps1"                                   WezTerm
+file "$ROOT\cmd\WezTerm\nightly-deploy.bat"                            WezTerm
+file "$ROOT\cmd\WezTerm\nightly-deploy.ps1"                            WezTerm
 file "$ROOT\cmd\WezTerm\gen-wezterm-inf.bat"                           WezTerm
 file "$ROOT\cmd\WezTerm\gen-wezterm-inf.ps1"                           WezTerm
 file "$ROOT\cmd\WezTerm\gen-wezterm-reg.bat"                           WezTerm
