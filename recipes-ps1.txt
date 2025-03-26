@@ -210,6 +210,12 @@ file "$ROOT\cmd\wt\README.txt"                                         wt
 file "$ROOT\cmd\wt\README.txt.in"                                      wt
 file "$ROOT\cmd\wt\README.txt.in.bat"                                  wt
 
+file "$ROOT\cmd\xz\latest.bat"                                         xz
+file "$ROOT\cmd\xz\latest.ps1"                                         xz
+file "$ROOT\cmd\xz\install-xz.bat"                                     xz
+file "$ROOT\cmd\xz\tukaani-project-xz.url"                             xz
+file "$ROOT\cmd\xz\XZ Utils.url"                                       xz
+
 file "$ROOT\cmd\zstd\latest.bat"                                       zstd
 file "$ROOT\cmd\zstd\latest.ps1"                                       zstd
 file "$ROOT\cmd\zstd\install-zstd.bat"                                 zstd
