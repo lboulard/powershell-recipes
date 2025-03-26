@@ -51,7 +51,7 @@ $currentDir = Get-Location
 try {
   Set-Location $dest | Out-Null
   Write-Host " ✓ " -NoNewline -ForegroundColor Green
-  Write-Host "Symbolic-Link: ./weterm → ./$lastVersion"
+  Write-Host "Symbolic-Link: ./wezterm → ./$lastVersion"
   New-Item -ItemType SymbolicLink -Path "./wezterm" -Target "./$lastVersion" -Force | Out-Null
 } finally {
   Set-Location $currentDir
