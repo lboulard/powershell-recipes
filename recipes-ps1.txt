@@ -73,6 +73,8 @@ file "$ROOT\dev\java\Azul\latest-azul.bat"                             java
 file "$ROOT\dev\java\Azul\latest-azul.ps1"                             java
 file "$ROOT\dev\java\Azul\deploy-azul.bat"                             java
 file "$ROOT\dev\java\Azul\deploy-azul.ps1"                             java
+file "$ROOT\dev\java\Azul\cleanup.bat"                                 java
+file "$ROOT\dev\java\Azul\cleanup.ps1"                                 java
 file "$ROOT\dev\java\Azul\README.Azul.Zulu.txt"                        java
 
 file "$ROOT\dev\LaTeX\pandoc\latest.bat"                               pandoc
