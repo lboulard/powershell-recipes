@@ -13,11 +13,11 @@ if (Test-Path $scoopInstallPath) {
 $cmdPath = $installPath + "\wezterm-gui.exe"
 
 $shellTemplate = @"
-[HKEY_CLASSES_ROOT\{0}\shell\WezTermHere]
+[HKEY_CURRENT_USER\Software\Classes\{0}\shell\WezTermHere]
 @="Open WezTerm Here"
 "Icon"="{1}"
 
-[HKEY_CLASSES_ROOT\{0}\shell\WezTermHere\command]
+[HKEY_CURRENT_USER\Software\Classes\{0}\shell\WezTermHere\command]
 @="\"{1}\" start --domain local --attach --no-auto-connect --cwd \"%V\""
 "@
 
