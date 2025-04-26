@@ -326,19 +326,29 @@ $script:EXCLUDE = @(
   'wfetch-.*\.bat'
 ) -join '|'
 
-$registryPath = "HKCU:\SOFTWARE\Scooter Software\Beyond Compare"
+$registryPaths = @(
+  "HKCU:\SOFTWARE\Scooter Software\Beyond Compare"
+  "HKLM:\SOFTWARE\Scooter Software\Beyond Compare"
+)
 $valueName = "ExePath"
 
 Write-Output ""
 
-try {
-  $exePath = Get-ItemPropertyValue -Path $registryPath -Name $valueName -ErrorAction Stop
-  $script:bc4InstallPath = Split-Path $exePath
-  Write-Output " * Beyond Compare installation found: ${script:bc4InstallPath}"
-} catch {
-  Write-Warning "Failed to read the registry value: $_"
+foreach ($registryPath in $registryPaths) {
+  try {
+    $exePath = Get-ItemPropertyValue -Path $registryPath -Name $valueName -ErrorAction Stop
+    $script:bcInstallPath = Split-Path $exePath
+    Write-Output " * Beyond Compare installation found: ${script:bcInstallPath}"
+  } catch {
+    $script:bcInstallPath = ""
+  }
+  if ($script:bcInstallPath) {
+    break;
+  }
+}
+
+if (-not $script:bcInstallPath) {
   Write-Warning "Beyond Compare installation not found"
-  $script:bc4InstallPath = ""
 }
 
 class FileCompareVisitor : DosBatchVisitor {
@@ -366,9 +376,9 @@ class FileCompareVisitor : DosBatchVisitor {
   [void] StartVisit ([SourceField[]]$fields) {
     ([DosBatchVisitor]$this).StartVisit($fields)
     $this.write("")
-    if ($script:bc4InstallPath) {
+    if ($script:bcInstallPath) {
       $this.write("@:: Add Beyond Compare path to BComp.exe")
-      $this.write("@PATH ${script:bc4InstallPath};%PATH%")
+      $this.write("@PATH ${script:bcInstallPath};%PATH%")
     } else {
       $this.write("@ECHO.** WARNING : Beyond Compare installation not found")
     }
