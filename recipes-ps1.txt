@@ -185,11 +185,11 @@ file "$ROOT\cmd\WezTerm\nightly.bat"                                   WezTerm
 file "$ROOT\cmd\WezTerm\nightly.ps1"                                   WezTerm
 file "$ROOT\cmd\WezTerm\nightly-deploy.bat"                            WezTerm
 file "$ROOT\cmd\WezTerm\nightly-deploy.ps1"                            WezTerm
-file "$ROOT\cmd\WezTerm\gen-wezterm-inf.bat"                           WezTerm
-file "$ROOT\cmd\WezTerm\gen-wezterm-inf.ps1"                           WezTerm
-file "$ROOT\cmd\WezTerm\gen-wezterm-reg.bat"                           WezTerm
-file "$ROOT\cmd\WezTerm\gen-wezterm-reg.ps1"                           WezTerm
-file "$ROOT\cmd\WezTerm\OpenWezTermHereRemove.reg"                     WezTerm
+file "$ROOT\cmd\WezTerm\shell\gen-wezterm-inf.bat"                     WezTerm\shell
+file "$ROOT\cmd\WezTerm\shell\gen-wezterm-inf.ps1"                     WezTerm\shell
+file "$ROOT\cmd\WezTerm\shell\gen-wezterm-reg.bat"                     WezTerm\shell
+file "$ROOT\cmd\WezTerm\shell\gen-wezterm-reg.ps1"                     WezTerm\shell
+file "$ROOT\cmd\WezTerm\shell\OpenWezTermHereRemove.reg"               WezTerm\shell
 
 file "$ROOT\cmd\Win32-OpenSSH\latest.bat"                              Win32-OpenSSH
 file "$ROOT\cmd\Win32-OpenSSH\latest.ps1"                              Win32-OpenSSH
