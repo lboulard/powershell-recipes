@@ -297,6 +297,7 @@ SaveDosBatch $templatePath $dosbatchPath $v
 
 $script:EXTS = @(
   'bat'
+  'cmd'
   'ps1'
   'ps.1'
   'iss'
@@ -323,6 +324,10 @@ $script:EXTS = @(
   'sha256'
   'sha512'
 ) -join '|'
+
+$script:INCLUDE = @(
+  'jq\.exe'
+)
 
 $script:EXCLUDE = @(
   'wfetch-.*\.bat'
@@ -358,6 +363,7 @@ class FileCompareVisitor : DosBatchVisitor {
   [string] keepFile( [SourceFileCopy]$FileCopy, [switch]$Verbose) {
     $pathname = $FileCopy.Pathname
     $accepted = $pathname -match "\.($($script:EXTS))$"
+    $accepted = $accepted -or ($pathname -match "($($script:INCLUDE))")
     $rejected = $pathname -match "($($script:EXCLUDE))"
     if ($Verbose) {
       Write-Verbose "compare ${pathname}: accepted=${accepted} rejected=${rejected}"
