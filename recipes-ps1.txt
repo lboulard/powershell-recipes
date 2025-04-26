@@ -275,6 +275,11 @@ file "$ROOT\editors\VSCode\installer\supplies\code.tmpl.cmd"           VSCode\in
 file "$ROOT\editors\VSCode\installer\supplies\jq.exe"                  VSCode\installer\supplies
 file "$ROOT\editors\VSCode\installer\supplies\settings.json"           VSCode\installer\supplies
 file "$ROOT\editors\VSCode\installer\supplies\VSCode.ico"              VSCode\installer\supplies
+file "$ROOT\editors\VSCode\extensions\latest-vscode-icons.bat"         VSCode\extensions
+file "$ROOT\editors\VSCode\extensions\latest-vscode-icons.ps1"         VSCode\extensions
+file "$ROOT\editors\VSCode\extensions\latest-vscode-powershell.bat"    VSCode\extensions
+file "$ROOT\editors\VSCode\extensions\latest-vscode-powershell.ps1"    VSCode\extensions
+file "$ROOT\editors\VSCode\extensions\installer.iss"                   VSCode\extensions
 
 file "$ROOT\Fonts\iosevka\latest.bat"                                  fonts-iosevka
 file "$ROOT\Fonts\iosevka\latest.ps1"                                  fonts-iosevka
