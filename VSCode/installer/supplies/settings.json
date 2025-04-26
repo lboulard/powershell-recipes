@@ -1,0 +1,17 @@
+{
+    "telemetry.telemetryLevel": "off",
+    "code-runner.enableAppInsights": false,
+    "update.mode": "none",
+    "extensions.autoUpdate": false,
+    "extensions.ignoreRecommendations": true,
+    "window.titleBarStyle": "native",
+    "json.format.keepLines": true,
+    "workbench.iconTheme": "vscode-icons",
+    "vsicons.dontShowNewVersionMessage": true,
+    "chat.commandCenter.enabled": false,
+    "remote.defaultExtensionsIfInstalledLocally": [
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "GitHub.vscode-pull-request-github"
+    ]
+}
