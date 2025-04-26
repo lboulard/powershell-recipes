@@ -190,6 +190,10 @@ file "$ROOT\cmd\WezTerm\shell\gen-wezterm-inf.ps1"                     WezTerm\s
 file "$ROOT\cmd\WezTerm\shell\gen-wezterm-reg.bat"                     WezTerm\shell
 file "$ROOT\cmd\WezTerm\shell\gen-wezterm-reg.ps1"                     WezTerm\shell
 file "$ROOT\cmd\WezTerm\shell\OpenWezTermHereRemove.reg"               WezTerm\shell
+file "$ROOT\cmd\WezTerm\nightly-installer.bat"                         WezTerm
+file "$ROOT\cmd\WezTerm\nightly-installer.ps1"                         WezTerm
+file "$ROOT\cmd\WezTerm\nightly-installer.iss"                         WezTerm
+file "$ROOT\cmd\WezTerm\terminal.ico"                                  WezTerm
 
 file "$ROOT\cmd\Win32-OpenSSH\latest.bat"                              Win32-OpenSSH
 file "$ROOT\cmd\Win32-OpenSSH\latest.ps1"                              Win32-OpenSSH

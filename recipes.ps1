@@ -299,6 +299,8 @@ $script:EXTS = @(
   'bat'
   'ps1'
   'ps.1'
+  'iss'
+  'ico'
   'py'
   'rb'
   'c'
