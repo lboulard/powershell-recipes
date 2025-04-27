@@ -215,6 +215,10 @@ file "$ROOT\cmd\wt\RoamingState.lnk"                                   wt
 file "$ROOT\cmd\wt\README.txt"                                         wt
 file "$ROOT\cmd\wt\README.txt.in"                                      wt
 file "$ROOT\cmd\wt\README.txt.in.bat"                                  wt
+file "$ROOT\cmd\wt\installer\wt-installer.bat"                         wt\installer
+file "$ROOT\cmd\wt\installer\wt-installer.ps1"                         wt\installer
+file "$ROOT\cmd\wt\installer\wt-installer.iss"                         wt\installer
+file "$ROOT\cmd\wt\installer\shim.exe"                                 wt\installer
 
 file "$ROOT\cmd\xz\latest.bat"                                         xz
 file "$ROOT\cmd\xz\latest.ps1"                                         xz
