@@ -327,7 +327,8 @@ $script:EXTS = @(
 
 $script:INCLUDE = @(
   'jq\.exe'
-)
+  'shim\.exe'
+) -join '|'
 
 $script:EXCLUDE = @(
   'wfetch-.*\.bat'
