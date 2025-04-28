@@ -18,8 +18,8 @@ from zipfile import ZipFile
 @total_ordering
 @dataclass(frozen=True)
 class Version:
-    _version: [int]
-    _pre: [str | int] = field(default_factory=list)
+    _version: list[int]
+    _pre: list[str | int] = field(default_factory=list)
     _full: str = ""
 
     @property
@@ -733,6 +733,46 @@ def install(register_only=False):
     # The key name should be "${fontName} (TrueType)" and the value should be the absolute path to the font.
 
 
+#############################################################################
+### Create [Files] section for Inno Setup
+
+# Source: "OZHANDIN.TTF"; DestDir: "{autofonts}"; FontInstall: "Oz Handicraft BT"; Flags: onlyifdoesntexist uninsneveruninstall
+
+
+def inno_file_line(writer, font_path, ttf_dest):
+    font_name = get_font_name_from_file(font_path)
+    if font_name:
+        print(f'Source: "{font_path}"; ', end="", flush=False, file=writer)
+        print(
+            f'DestDir: "{{autofonts}}\\{ttf_dest}"; ', end="", flush=False, file=writer
+        )
+        print(f'FontInstall: "{font_name}"; ', end="", flush=False, file=writer)
+        print("Flags: ignoreversion comparetimestamp uninsneveruninstall", file=writer)
+    else:
+        print(f'// Source: "{font_path}"; // cannot find font name', file=writer)
+
+
+def inno():
+    # requires Python 3.12 for "case_sensitive" keyword argument
+    files = list(Path(".").glob("*ttf*iosevka*.zip", case_sensitive=False))
+    files = sorted(files, key=extract_version, reverse=True)
+    if not files:
+        die("no files found")
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        extract_all(files, root_path=temp_dir)
+        version = extract_version(files[0])
+        ttf_dest = Path("ttf-iosevka-" + version.full)
+
+        Path("version.inc.iss").write_text(f'#define MyAppVersion "{version.full}"')
+        with open("files.inc.iss", "w+") as writer:
+            for font_path in (temp_dir / ttf_dest).glob("*.ttf", case_sensitive=False):
+                inno_file_line(writer, font_path, ttf_dest)
+        os.system('"C:/Program Files (x86)/Inno Setup 6/ISCC.exe" installer.iss')
+
+
 if __name__ == "__main__":
     from argparse import ArgumentParser
 
@@ -748,10 +788,17 @@ if __name__ == "__main__":
     # install
     install_cmd = sub.add_parser("install", help="user install of fonts in registry")
     install_cmd.add_argument(
-        "-r", "--register-only",
+        "-r",
+        "--register-only",
         action="store_true",
         help="only update registry for current installed fonts",
     )
+    # inno setupo based installer creation
+    cleanup_cmd = sub.add_parser(
+        "inno", help="create an installer based on Inno Setup 6"
+    )
+    cleanup_cmd.set_defaults(func=inno)
+    #
     install_cmd.set_defaults(func=install)
     #
     args = parser.parse_args()
