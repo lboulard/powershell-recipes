@@ -79,16 +79,38 @@ $versions = @(
 # Source: "OZHANDIN.TTF"; DestDir: "{autofonts}"; FontInstall: "Oz Handicraft BT"; \
 #  Flags: ignoreversion comparetimestamp uninsneveruninstall
 
-$files = Get-ChildItem "$release\ttf\static" -Filter '*.ttf' | ForEach-Object {
-    $fontFilePath = Resolve-Path -Path $_.Fullname -Relative
-    $fontName = Get-FontNameFromFile -fontFilePath $fontFilePath
-    @(
-        "Source: `"${fontFilePath}`""
-        "DestDir: `"{autofonts}\${release}`""
-        "FontInstall: `"${fontName}`""
-        "Flags: ignoreversion comparetimestamp uninsneveruninstall"
-    ) -join "; "
+$files = Get-ChildItem "$release\ttf\static" -Filter '*.ttf'
+$filesMain = $files | Where-Object { $_.Name -match '^Cascadia(Mono|Code)-' }
+$filesVariants = $files | Where-Object { $_.Name -match '^Cascadia(Mono|Code)(PL|NF)-' }
+
+function Generator {
+    [CmdletBinding()]
+    param(
+        [parameter(ValueFromPipeline)]
+        $files
+    )
+
+    process {
+        $files | ForEach-Object {
+            $fontFilePath = Resolve-Path -Path $_.Fullname -Relative
+            $fontName = Get-FontNameFromFile -fontFilePath $fontFilePath
+            @(
+                "Source: `"${fontFilePath}`""
+                "DestDir: `"{autofonts}\${release}`""
+                "FontInstall: `"${fontName}`""
+                "Flags: ignoreversion comparetimestamp uninsneveruninstall"
+                $(
+                    if ($_.Name -match '^Cascadia(Mono|Code)PL-') {
+                        "Components: PL"
+                    } elseif ($_.Name -match '^Cascadia(Mono|Code)NF-') {
+                        "Components: NF"
+                    }
+                )
+            ) -join "; "
+        }
+    }
 }
 
 Set-Content -Value $versions "version.inc.iss"
-Set-Content -Value $files "files.inc.iss"
+Set-Content -Value ($filesMain | Generator) "files-main.inc.iss"
+Set-Content -Value ($filesVariants | Generator) "files-variants.inc.iss"
