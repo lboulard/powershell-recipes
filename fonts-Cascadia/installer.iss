@@ -1,6 +1,6 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
-#define MyAppName "CacadiaCode Fonts"
+#define MyAppName "CascadiaCode Fonts"
 #define MyAppVersion "UnknownVersion"
 #define MyAppPublisher "Microsoft © / lboulard.net"
 #define MyAppURL "https://github.com/microsoft/cascadia-code"
