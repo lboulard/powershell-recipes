@@ -293,6 +293,9 @@ file "$ROOT\Fonts\iosevka\extract.bat"                                 fonts-ios
 file "$ROOT\Fonts\iosevka\install.bat"                                 fonts-iosevka
 file "$ROOT\Fonts\iosevka\reload-fonts.bat"                            fonts-iosevka
 file "$ROOT\Fonts\iosevka\Releases · be5invis_Iosevka.url"             fonts-iosevka
+file "$ROOT\Fonts\iosevka\installer.bat"                               fonts-iosevka
+file "$ROOT\Fonts\iosevka\installer.iss"                               fonts-iosevka
+file "$ROOT\Fonts\iosevka\LICENSE.md"                                  fonts-iosevka
 
 file "$ROOT\Fonts\Cascadia\latest.bat"                                 fonts-Cascadia
 file "$ROOT\Fonts\Cascadia\latest.ps1"                                 fonts-Cascadia
