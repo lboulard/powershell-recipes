@@ -305,6 +305,9 @@ file "$ROOT\Fonts\IBM Plex\latest.bat"                                 fonts-IBM
 file "$ROOT\Fonts\IBM Plex\latest.ps1"                                 fonts-IBM-Plex
 file "$ROOT\Fonts\Inter\latest.bat"                                    fonts-Inter
 file "$ROOT\Fonts\Inter\latest.ps1"                                    fonts-Inter
+file "$ROOT\Fonts\Inter\installer.bat"                                 fonts-Inter
+file "$ROOT\Fonts\Inter\installer.ps1"                                 fonts-Inter
+file "$ROOT\Fonts\Inter\installer.iss"                                 fonts-Inter
 
 file "$ROOT\graphics\irfanview\latest.bat"                             irfanview
 file "$ROOT\graphics\irfanview\latest.ps1"                             irfanview
