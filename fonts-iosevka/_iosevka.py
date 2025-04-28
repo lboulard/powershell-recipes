@@ -736,7 +736,8 @@ def install(register_only=False):
 #############################################################################
 ### Create [Files] section for Inno Setup
 
-# Source: "OZHANDIN.TTF"; DestDir: "{autofonts}"; FontInstall: "Oz Handicraft BT"; Flags: onlyifdoesntexist uninsneveruninstall
+# Source: "OZHANDIN.TTF"; DestDir: "{autofonts}"; FontInstall: "Oz Handicraft BT"; \
+#  Flags: ignoreversion comparetimestamp uninsneveruninstall
 
 
 def inno_file_line(writer, font_path, ttf_dest):
