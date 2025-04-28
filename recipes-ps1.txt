@@ -304,6 +304,7 @@ file "$ROOT\Fonts\Cascadia\README BEFORE INSTALL.txt"                  fonts-Cas
 file "$ROOT\Fonts\Cascadia\installer.bat"                              fonts-Cascadia
 file "$ROOT\Fonts\Cascadia\installer.ps1"                              fonts-Cascadia
 file "$ROOT\Fonts\Cascadia\installer.iss"                              fonts-Cascadia
+file "$ROOT\Fonts\Cascadia\installer.variants.iss"                     fonts-Cascadia
 file "$ROOT\Fonts\Cascadia\LICENSE.txt"                                fonts-Cascadia
 
 file "$ROOT\Fonts\IBM Plex\latest.bat"                                 fonts-IBM-Plex
