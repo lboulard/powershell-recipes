@@ -57,5 +57,5 @@ end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  Result := (PageID = wpReady);
+  Result := (PageID = wpReady) or (PageID = wpSelectDir);
 end;
