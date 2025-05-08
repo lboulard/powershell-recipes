@@ -1,5 +1,7 @@
+. "$PSScriptRoot\Config.ps1"
 . "$PSScriptRoot\system.ps1"
 . "$PSScriptRoot\Download.ps1"
+. "$PSScriptRoot\HTML.ps1"
 . "$PSScriptRoot\Archive.ps1"
 . "$PSScriptRoot\HardLink.ps1"
 . "$PSScriptRoot\GitHub.ps1"

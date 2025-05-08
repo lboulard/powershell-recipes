@@ -217,6 +217,8 @@ function Get-Url() {
     if (-not $Headers.Contains('Accept')) {
       $headers['Accept'] = 'application/octet-stream'
     }
+    $hasUserAgent = $Headers.Contains('User-Agent')
+    $config = Get-RecipesConfig
 
     $UrlList | ForEach-Object {
       $url = [System.Uri]($_)
@@ -225,6 +227,10 @@ function Get-Url() {
         $dest = [Uri]::UnescapeDataString($url.Fragment.Substring(1))
       } else {
         $dest = [Uri]::UnescapeDataString($url.Segments[-1])
+      }
+
+      if (!$hasUserAgent) {
+        $Headers['User-Agent'] = $config.GetUserAgent($src)
       }
 
       Write-Host "# $dest"
