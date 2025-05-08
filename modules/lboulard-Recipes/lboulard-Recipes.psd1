@@ -73,6 +73,8 @@ FunctionsToExport = @(
   'Get-RecipesConfigList'
   'Get-RecipesUserAgent'
 
+  'Invoke-HtmlRequest'
+
   'Get-Url'
 
   'Expand-GZip'
