@@ -18,8 +18,7 @@ function Get-HTML {
   try {
     $html = New-Object -Com "HTMLFile"
     if ($html) {
-      $response = Invoke-WebRequest -Uri $Uri -UseBasicParsing `
-        -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
+      $response = Invoke-HtmlRequest -Uri $Uri
       if ($html | Get-Member -Name "IHTMLDocument2_write" -Type Method) {
         # PowerShell 5.1
         $html.IHTMLDocument2_write($response.Content)

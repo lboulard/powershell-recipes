@@ -10,7 +10,7 @@ $versionPattern = "^release-(?<version>\d+\.\d+)"
 
 Import-Module lboulard-Recipes
 
-$links = (Invoke-WebRequest $repo).Links
+$links = (Invoke-HtmlRequest $repo).Links
 
 $releases = $links.href | Where-Object {
   $_ -match $versionPattern
@@ -29,7 +29,7 @@ $releaseURL = "$repo$($releases[0])windows"
 
 # find version identifier in windows folder
 
-$links = (Invoke-WebRequest $releaseURL).Links
+$links = (Invoke-HtmlRequest $releaseURL).Links
 
 #$files =,"kate-release_$version-windows-cl-msvc2022-x86_64.exe"
 #$files += "kate-release_$version-windows-cl-msvc2022-x86_64.exe.sha256"

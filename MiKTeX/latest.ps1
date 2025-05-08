@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 # Find latest versions at page root
 
 $IndexURL = "https://miktex.org/download"
-$html = Invoke-WebRequest -Uri $IndexURL -UseBasicParsing
+$html = Invoke-HtmlRequest -Uri $IndexURL
 $links = $html.links.href | % { [System.Net.WebUtility]::HtmlDecode($_) }
 
 $url = [System.Uri]$IndexURL

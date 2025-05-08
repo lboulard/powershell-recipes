@@ -11,9 +11,8 @@ $repo = "https://erlang.org/download/otp_versions_tree_app_vsns.html"
 
 $versionRegex = "/(?<release>otp_(win64|doc_html)_(?<version>\d+\.\d+(\.\d+){0,2})(\.\d+)*\.(exe|tar\.gz))$"
 
-$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 try {
-  $html = Invoke-WebRequest -Uri $repo -UseBasicParsing -UserAgent $userAgent
+  $html = Invoke-HtmlRequest -Uri $repo
 } catch {
   Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
   exit 1

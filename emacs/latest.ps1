@@ -10,7 +10,7 @@ $versionPattern = "^emacs-(?<version>\d+\.\d+(_\d)?)(\.zip|-sha256.+\.txt)(\.sig
 
 Import-Module lboulard-Recipes
 
-$links = (Invoke-WebRequest $IndexURL -UseBasicParsing).Links
+$links = (Invoke-HtmlRequest $IndexURL).Links
 
 $url = [System.Uri]$IndexURL
 

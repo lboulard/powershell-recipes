@@ -66,7 +66,7 @@ function AzulMetadata {
     "page_size=1000"
     "include_fields=os,lib_c_type,arch,hw_bitness,java_package_type,archive_type,javafx_bundled,sha256_hash"
   ) -Join "&"
-  $response = Invoke-WebRequest "${api_url}?${query}"
+  $response = Invoke-HtmlRequest "${api_url}?${query}"
   if ($response.StatusCode -eq 200) {
     $response.Content | ConvertFrom-Json
   } else {

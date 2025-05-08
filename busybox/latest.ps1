@@ -10,9 +10,8 @@ $versionRegex = "^busybox-(w\d+[au]?)-FRP-(?<version>\d+-g[0-9a-f]+)\.exe"
 
 Import-Module lboulard-Recipes
 
-$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 try {
-  $html = Invoke-WebRequest -Uri $repo -UseBasicParsing -UserAgent $userAgent
+  $html = Invoke-HtmlRequest -Uri $repo
 } catch {
   Write-Error "Error: $($_.Exception.Message)"
   exit 1
@@ -56,7 +55,7 @@ $files = $files | ForEach-Object { "$_#$version/$_" }
 $files += "busybox.1.gz#man1/busybox-$version.1.gz"
 $files = $files | ForEach-Object { "$repo/$_" }
 
-Get-Url $files -Headers @{ 'User-Agent' = $userAgent }
+Get-Url $files
 
 if (-not (Test-Path "man1/busybox-$version.1" )) {
   Expand-GZip "man1/busybox-$version.1.gz"

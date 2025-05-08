@@ -12,12 +12,10 @@ $versionPattern = "(?<version>\d+\.\d+(\.\d+)?)"
 
 $wanted = "/tea-" + $versionPattern + "-windows(-4\.0)?-amd64\.exe(\.(asc|sha256|asc\.sha256))?$"
 
-$UserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-
 $url = [System.Uri]$IndexURL
 
 Write-Host "Reading $IndexURL"
-$response = Invoke-WebRequest -Uri $IndexURL -UseBasicParsing -UserAgent $UserAgent
+$response = Invoke-HtmlRequest -Uri $IndexURL
 
 $files = $response.links.href | ForEach-Object {
   if ($_ -match $branchRegex) {
@@ -31,7 +29,7 @@ $files = $response.links.href | ForEach-Object {
   if (-not $found) {
     Write-Host "Reading $_"
     $folderURL = $_
-    $folder = Invoke-WebRequest -Uri $_ -UseBasicParsing -UserAgent $UserAgent
+    $folder = Invoke-HtmlRequest -Uri $_
     $folder.links.href | Where-Object {
       $_ -match $wanted
     } | ForEach-Object {

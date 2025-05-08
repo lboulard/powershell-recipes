@@ -7,10 +7,8 @@ $index = "https://www.irfanview.com/64bit.htm"
 
 Import-Module lboulard-Recipes
 
-$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-$userAgent = 'Download/Powershell 5.1'
 try {
-  $html = Invoke-WebRequest -Uri $index -UseBasicParsing -UserAgent $userAgent
+  $html = Invoke-HtmlRequest -Uri $index
 } catch {
   Write-Error "Error: $($_.Exception.Message)"
   exit 1
@@ -61,7 +59,6 @@ if ($false) {
 
   # Direct download does not work
   Get-Url $files -Headers @{
-    'User-Agent' = $userAgent
     'Referer'    = 'https://www.techspot.com/'
   }
 }

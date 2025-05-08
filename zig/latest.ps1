@@ -24,7 +24,7 @@ $notes = @(
   "notes"
 )
 
-$json = Invoke-RestMethod -Uri $index -UseBasicParsing
+$json = Invoke-RestMethod -Uri $index
 
 if ($DevOnly) {
   $versions = $json | Get-Member -MemberType NoteProperty -Name "master" | Select-Object -ExpandProperty Name

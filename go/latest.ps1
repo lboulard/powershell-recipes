@@ -8,9 +8,8 @@ Import-Module lboulard-Recipes
 $IndexURL = "https://go.dev/dl/"
 $pathRegex = "/dl/(?<release>go(?<version>\d+\.\d+(\.\d+)+)\.(linux-amd64|linux-armv6l|windows-amd64).*)"
 
-$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 try {
-  $html = Invoke-WebRequest -Uri $IndexURL -UseBasicParsing -UserAgent $userAgent
+  $html = Invoke-HtmlRequest -Uri $IndexURL
 } catch {
   Write-Error "Error: $($_.Exception.Message)"
   exit 1

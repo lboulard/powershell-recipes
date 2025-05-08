@@ -8,7 +8,7 @@ $versionPattern = "^kate-master-(?<version>\d+)-windows-cl-msvc2022-x86_64\.exe$
 
 Import-Module lboulard-Recipes
 
-$links = (Invoke-WebRequest $repo).Links
+$links = (Invoke-HtmlRequest $repo).Links
 
 $releases = $links.href | Where-Object {
   $_ -match $versionPattern

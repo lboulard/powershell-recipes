@@ -11,9 +11,8 @@ $index = "https://www.scintilla.org/SciTEDownload.html"
 # and both 64bit windows binary releases (regular SciTE.exe and single executable Sc1)
 $versionRegex = "/(?<release>(w?scite|sc)(?<version>\d+?\d\d)\.(zip|exe|tgz))$"
 
-$userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
 try {
-  $html = Invoke-WebRequest -Uri $index -UseBasicParsing -UserAgent $userAgent
+  $html = Invoke-HtmlRequest -Uri $index
 } catch {
   Write-Error "Error: $($_.Exception.Message)"
   exit 1
