@@ -20,10 +20,10 @@
 
 :: do not use dosbatch, our script is killed
 clink_x64.exe uninstallscripts --all
-clink_x64.exe installscripts "%HERE%"
 clink_x64.exe installscripts "%HERE%\clink-completions"
 clink_x64.exe installscripts "%HERE%\clink-flex-prompt"
 clink_x64.exe installscripts "%HERE%\clink-gizmos"
+clink_x64.exe installscripts "%HERE%\z.lua-1.8.20"
 
 
 @:: Pause if not interactive
