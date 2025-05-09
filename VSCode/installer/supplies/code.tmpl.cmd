@@ -1,1 +1,3 @@
-@"{{CODE_EXE}}" %*
+@SETLOCAL
+@CALL "{{CODE_EXE}}" %*
+@ENDLOCAL & EXIT /B %ERRORLEVEL%
