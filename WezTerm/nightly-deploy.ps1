@@ -1,11 +1,11 @@
 ﻿$ErrorActionPreference = "Stop"
 
-$root = $PSScriptRoot
+$root = Get-Location
 
 $filenameRegex = '^Wezterm-windows-\d{8}-\d+-[0-9a-f]+$'
 
 $folder = Join-Path $root "nightly"
-$archive = Join-Path $folder "WezTerm-windows-nightly.zip"
+$archive = Join-Path $folder "WezTerm-windows-nightly.zip" -Resolve
 
 $lbPrograms = $Env:LBPROGRAMS
 $prefix = $lbPrograms

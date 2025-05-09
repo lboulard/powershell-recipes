@@ -234,7 +234,7 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
     }
   }
 
-  $fullPath = Join-Path (Resolve-Path ".") $to
+  $fullPath = Resolve-Path $to
   Write-Host " # ${to}"
   if ($lastModifiedDate) {
     Write-Host " # Last modified time: $lastModifiedDate"
@@ -366,6 +366,8 @@ if (canProgress) {
   $progressFunc = $function:progress
 }
 
+$location = (Get-RecipesConfig).GetFetchLocation("wezterm")
+
 foreach ($url in $files) {
-  Invoke-Download $url $null $null $progressFunc $null
+  Invoke-Download $url $null $null $progressFunc $location
 }
