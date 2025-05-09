@@ -129,6 +129,13 @@ begin
   InstallDosbatchPage.Values[0] := InstallDosbatchPath;
 end;
 
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  if CurPageID = InstallDosbatchPage.ID then
+    InstallDosbatchPath := InstallDosbatchPage.Values[0];
+  Result := True
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
@@ -143,19 +150,13 @@ begin
   begin
     SetPreviousData(PreviousDataKey, InstallDosbatchPathKey, InstallDosbatchPath);
     RegWriteStringValue(HKA, LBWezTermRegistryKey, InstallDosbatchPathKey, InstallDosbatchPath);
+    Log(InstallDosbatchPathKey + ': ' + InstallDosbatchPath);
   end;
 end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := (PageID = InstallDosbatchPage.ID) and not WizardIsTaskSelected('dosbatch');
-end;
-
-function InitializeUninstall: Boolean;
-begin
-  InstallDosbatchPath := GetPreviousData(InstallDosbatchPathKey, InstallDosbatchPath);
-  Log(InstallDosbatchPathKey + ': ' + InstallDosbatchPath);
-  Result := True;
 end;
 
 function Delete(const Path: String): Boolean;
@@ -172,10 +173,6 @@ end;
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usPostUninstall then
-  begin
     if (InstallDosbatchPath <> '') and DirExists(InstallDosbatchPath) then
-    begin
       Delete(AddBackslash(InstallDosbatchPath) + 'wezterm.cmd');
-    end;
-  end;
 end;
