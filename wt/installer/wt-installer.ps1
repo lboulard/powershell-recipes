@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$root = Resolve-path $PSScriptRoot
+$root = Get-Location
 
 $folderRegex = '^terminal-(?<version>\d+(\.\d+){2,3})$'
 $archiveRegEx = '^Microsoft\.WindowsTerminal_(?<version>\d+(\.\d+){2,3})_x64\.zip$'
@@ -16,19 +16,20 @@ $archive = Get-ChildItem $src -File | Where-Object {
 
 $work = Join-Path $dest "tmp"
 New-Item $work -ItemType Directory -Force | Out-Null
-Expand-Archive -DestinationPath $work -Path $archive.FullName -Force
+Expand-Archive -DestinationPath $work -LiteralPath $archive.FullName -Force
 
 $item = Get-ChildItem $work -Directory | Where-Object {
   $_.Name -match $folderRegex
 }
 
 if (-not $item) {
-  throw "${archive}: distribution fodler not found"
+  throw "${archive}: distribution folder not found"
 }
 
 $releaseFolder = Join-Path $dest $item.Name
 if (Test-Path $releaseFolder) { Remove-Item $releaseFolder -Recurse -Force }
-Move-Item -Path $item.FullName -Destination $dest -Force
+Move-Item -LiteralPath $item.FullName -Destination $dest -Force
+if (!(Test-Path "$work\*")) { Remove-Item $work }
 
 $item.Name -match $folderRegex | Out-Null
 $version = $Matches.version

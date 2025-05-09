@@ -24,7 +24,7 @@ ChangesAssociations=yes
 DefaultGroupName=.
 AllowNoIcons=yes
 PrivilegesRequired=lowest
-OutputDir=build
+OutputDir=installers
 OutputBaseFilename=Microsoft.Windows.Terminal-Zip-{#TerminalVersion}
 SolidCompression=yes
 WizardStyle=modern
@@ -36,7 +36,7 @@ Name: "shim"; Description: "Create wt.exe shim (avoid modifying user PATH)"; Gro
 
 [Files]
 Source: "{#TerminalFolder}\*"; DestDir: "{app}"; Flags: createallsubdirs recursesubdirs
-SOurce: "shim.exe"; DestDir: "{tmp}"; Flags: ignoreversion; AfterInstall: CreateShim; Tasks: "shim"
+SOurce: "{#SourcePath}\shim.exe"; DestDir: "{tmp}"; Flags: ignoreversion; AfterInstall: CreateShim; Tasks: "shim"
 
 #define ShellGroup "TerminalTab"
 #define ShellText "Open in Terminal Tab (ZIP)"
