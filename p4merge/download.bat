@@ -1,11 +1,12 @@
 @SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 @CD /D "%~dp0"
+@CALL "%~dp0\..\bin\getfetchlocation.bat" p4merge
 
 @SET "V=24.4"
 @SET "DEST=p4-20%V%"
 
-@IF NOT EXIST "%DEST%\." @MD "%DEST%"
-@CD ".\%DEST%"
+@IF NOT EXIST "%LOCATION%\%DEST%\." @MD "%LOCATION%\%DEST%"
+CD /D "%LOCATION%\%DEST%"
 
 curl -# -f -JLR --remote-name-all --parallel --parallel-max 4^
  https://cdist2.perforce.com/perforce/r%V%/bin.ntx64/p4vinst64.exe^

@@ -42,5 +42,5 @@ $version = $Matches.version
 $files = $files | ForEach-Object { "${releaseURL}/$_#${version}/$_" }
 
 if ($files) {
-  Get-Url $files
+  Get-Url $files -ProjectName kate
 }

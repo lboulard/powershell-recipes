@@ -37,7 +37,7 @@ $files = $response.links.href | ForEach-Object {
   if (-not $found) {
     Write-Host "Reading $_"
     $folderURL = $_
-    $folder = Invoke-HtmlRequest -Uri
+    $folder = Invoke-HtmlRequest -Uri $_
     $folder.links.href | Where-Object {
       $_ -match $wanted
     } | ForEach-Object {
@@ -65,4 +65,4 @@ $files = $files | % {
   "$_#gitea-${version}/${name}"
 }
 
-Get-Url $files
+Get-Url $files -ProjectName gitea

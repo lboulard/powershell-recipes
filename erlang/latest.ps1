@@ -86,5 +86,5 @@ $files = $maintained | ForEach-Object {
 }
 
 if ($files) {
-  Get-Url $files
+  Get-Url $files -ProjectName erlang
 }

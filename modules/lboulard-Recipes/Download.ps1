@@ -202,6 +202,7 @@ function Get-Url() {
   param(
     [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ParameterSetName = "Url")]
     [string[]]$UrlList,
+    [Parameter(Mandatory = $true)]$ProjectName,
     [hashtable]$Headers = @{}
   )
 
@@ -233,6 +234,8 @@ function Get-Url() {
         $Headers['User-Agent'] = $config.GetUserAgent($src)
       }
 
+      $dest = $config.ResolveLocation($ProjectName, $dest)
+
       Write-Host "# $dest"
       if (-not (Test-Path $dest)) {
         try {
@@ -262,6 +265,8 @@ function Get-GitHubAssetsOfLatestRelease() {
     [string]$Project,
     [Parameter(Mandatory, Position = 1)]
     [string]$tagPattern,
+    [Parameter(Mandatory)]
+    [string]$ProjectName,
     [ScriptBlock]$FileSelection = {},
     [ScriptBlock]$NameMangle = {}
   )
@@ -304,6 +309,6 @@ function Get-GitHubAssetsOfLatestRelease() {
     }
   }
   if ($files) {
-    Get-Url $files
+    Get-Url $files -ProjectName $ProjectName
   }
 }

@@ -8,7 +8,7 @@ $tagPattern = "(?<version>\d+\.\d+(\.\d+)?)"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName '7zip' -FileSelection {
   $release = $version -replace '\.', ''
   @(
     "7z${release}-x64.exe"

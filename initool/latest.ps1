@@ -42,5 +42,5 @@ if ($githubToken) {
 }
 
 if ($files) {
-  Get-Url $files -Headers $headers
+  Get-Url $files -Headers $headers -ProjectName initool
 }

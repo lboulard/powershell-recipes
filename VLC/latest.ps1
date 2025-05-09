@@ -88,5 +88,5 @@ if ($files) {
 Write-Host "# last Version $version"
 
 if ($files) {
-  Get-Url $files
+  Get-Url $files -ProjectName vlc
 }

@@ -8,7 +8,7 @@ $project = "Predelnik/DSpellCheck"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName notepad++plugins -FileSelection {
   @(
     "DSpellCheck_x64.zip#DSpellCheck_x64_$version.zip"
     "DSpellCheck_x86.zip#DSpellCheck_x86_$version.zip"

@@ -8,7 +8,7 @@ $project = "hashcat/hashcat"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName hashcat -FileSelection {
   @(
     "hashcat-${version}.7z"
   )

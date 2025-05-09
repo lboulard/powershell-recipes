@@ -8,7 +8,7 @@ $project = "rsms/inter"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName fonts-inter -FileSelection {
   @(
     "Inter-${version}.zip"
   )

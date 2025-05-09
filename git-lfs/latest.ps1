@@ -12,7 +12,7 @@ $project = "git-lfs/git-lfs"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName git-lfs -FileSelection {
   @(
     "git-lfs-windows-v$version.exe",
     "git-lfs-windows-amd64-v$version.zip",

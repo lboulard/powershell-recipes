@@ -3,6 +3,10 @@
 @CD /D "%~dp0"
 @IF ERRORLEVEL 1 GOTO :exit
 
+@CALL "%~dp0\..\bin\getfetchlocation.bat" miktex
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
+
 :: check if not admin
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
 @IF %ERRORLEVEL% EQU 0 (
@@ -18,7 +22,7 @@
 ".\miktexsetup_standalone.exe"^
  --verbose^
  --remote-package-repository="%URL%"^
- --local-package-repository="%~dp0CTAN"^
+ --local-package-repository="%LOCATION%\CTAN"^
  --package-set=complete^
  download
 

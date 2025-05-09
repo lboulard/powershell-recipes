@@ -3,6 +3,10 @@
 @CD /D "%~dp0"
 @IF ERRORLEVEL 1 GOTO :exit
 
+@CALL "%~dp0\..\bin\getfetchlocation.bat" miktex
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
+
 :: check if not admin
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
 @IF %ERRORLEVEL% EQU 0 (
@@ -28,7 +32,7 @@
  --unattended^
  --auto-install=yes^
  --remote-package-repository="%URL%"^
- --local-package-repository="%~dp0CTAN"^
+ --local-package-repository="%LOCATION%\CTAN"^
  --user-config="%APPDATA%\MiKTeX"^
  --user-data="%LOCALAPPDATA%\MiKTeX"^
  --user-install="%LOCALAPPDATA%\Programs\MiKTeX"^
@@ -44,12 +48,9 @@
 @:: Pause if not interactive
 @:exit
 @SET ERR=%ERRORLEVEL%
-@IF DEFINED _ELEV GOTO :_elev
-@IF ERRORLEVEL 1 @ECHO Failure ERRORLEVEL=%ERRORLEVEL%
 @SET ERRORLEVEL=0
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
-@:_elev
 @ENDLOCAL&EXIT /B %ERR%
 
 :errorlevel

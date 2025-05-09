@@ -55,26 +55,39 @@ $files = $files | ForEach-Object { "$_#$version/$_" }
 $files += "busybox.1.gz#man1/busybox-$version.1.gz"
 $files = $files | ForEach-Object { "$repo/$_" }
 
-Get-Url $files
+Get-Url $files -ProjectName 'busybox'
 
-if (-not (Test-Path "man1/busybox-$version.1" )) {
-  Expand-GZip "man1/busybox-$version.1.gz"
-}
+$location = (Get-RecipesConfig).GetFetchLocation('busybox')
 
-if (!$error) {
-  @(
+try {
+  $formerLocation = Get-Location
+  Set-Location $location
+
+  if (-not (Test-Path "man1/busybox-$version.1" )) {
+    Expand-GZip "man1/busybox-$version.1.gz"
+  }
+
+  if (!$error) {
+    @(
     ("busybox.exe", "$version/busybox-w32-FRP-$version.exe"),
     ("busybox64.exe", "$version/busybox-w64u-FRP-$version.exe")
-  ) | ForEach-Object {
-    try {
-      $link = $_[0]
-      $path = $_[1]
-      $updated = (Update-HardLink $path $link -CreateIfAbsent).Updated
-      Write-Host "hardlink: $link -> $path" -NoNewline
-      Write-Host $(if ($updated) { "" } else { " (nochange)" })
-    } catch {
-      Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
-      break
+    ) | ForEach-Object {
+      try {
+        $link = $_[0]
+        $path = $_[1]
+        $updated = (Update-HardLink $path $link -CreateIfAbsent).Updated
+        Write-Host "hardlink: $link -> $path" -NoNewline
+        Write-Host $(if ($updated) { "" } else { " (nochange)" })
+      }
+      catch {
+        Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
+        break
+      }
     }
+  }
+}
+finally {
+  if ($formerLocation) {
+    Set-Location $formerLocation
   }
 }

@@ -26,9 +26,18 @@ $notes = @(
 
 $json = Invoke-RestMethod -Uri $index
 
+$location = (Get-RecipesConfig).GetFetchLocation('zig')
+if ($location) {
+  Write-Host "Moving to $location"
+  Set-Location $location
+  # required for IO.File to find file
+  [IO.Directory]::SetCurrentDirectory($location)
+}
+
 if ($DevOnly) {
   $versions = $json | Get-Member -MemberType NoteProperty -Name "master" | Select-Object -ExpandProperty Name
-} else {
+}
+else {
   $versions = $json | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object {
     $_ -match $versionRegex
   } | Sort-Object -Unique -Descending -Property {
@@ -50,12 +59,14 @@ function GetForAllArchs ([string]$member) {
     $version = $Matches.version
     $v = [version]$version
     $dev = $null
-  } else {
+  }
+  else {
     $version = $releases.version
     if ($version -match $versionRegex.Trim('$')) {
       $v = [version]$Matches.version
       $dev = $Matches.dev
-    } elseif (-not $version) {
+    }
+    elseif (-not $version) {
       $version = "unknown"
     }
   }
@@ -64,7 +75,8 @@ function GetForAllArchs ([string]$member) {
     if ($dev) {
       $branch += $dev
     }
-  } else {
+  }
+  else {
     $branch = "unknown"
   }
   $notes | ForEach-Object {
@@ -125,13 +137,17 @@ function Format-Bytes {
 
   if ($bytes -lt 1KB) {
     return "{0}B" -f $bytes
-  } elseif ($bytes -lt 1MB) {
+  }
+  elseif ($bytes -lt 1MB) {
     return "{0:N2}KB" -f ($bytes / 1KB)
-  } elseif ($bytes -lt 1GB) {
+  }
+  elseif ($bytes -lt 1GB) {
     return "{0:N2}MB" -f ($bytes / 1MB)
-  } elseif ($bytes -lt 1TB) {
+  }
+  elseif ($bytes -lt 1TB) {
     return "{0:N2}GB" -f ($bytes / 1GB)
-  } else {
+  }
+  else {
     return "{0:N2}TB" -f ($bytes / 1TB)
   }
 }
@@ -174,7 +190,8 @@ $files | ForEach-Object {
   $src = $parts[0]
   if ($parts.Length -eq 2) {
     $dest = $parts[1]
-  } else {
+  }
+  else {
     $dest = [System.Web.HttpUtility]::UrlDecode($parts[0] -replace '^.*/', '')
   }
   $checksum = $_.Sha256
@@ -182,7 +199,8 @@ $files | ForEach-Object {
 
   if ($size) {
     Write-Host "# $dest`t$(Format-Bytes ${size})"
-  } else {
+  }
+  else {
     Write-Host "# $dest"
   }
 
@@ -205,7 +223,8 @@ $files | ForEach-Object {
         try {
           $lastModifiedDate = Get-Date $lastModified
           (Get-Item $tmpFile).LastWriteTimeUtc = $lastModifiedDate
-        } catch {
+        }
+        catch {
           Write-Error "Error: $($_.Exception.Message)"
           Write-Error "Date: $lastModified"
         }
@@ -224,7 +243,8 @@ $files | ForEach-Object {
       if (-not $failed) {
         Move-Item -Path $tmpFile -Destination "$dest"
       }
-    } catch {
+    }
+    catch {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)" -TargetObject $_
       break
     }
@@ -237,7 +257,8 @@ $shortcuts | ForEach-Object {
   $filename = "$($shortcut.Branch)/$($shortcut.Name).url"
   if (Test-Path $filename) {
     $current = [IO.File]::ReadAllLines($filename)
-  } else {
+  }
+  else {
     $current = $null
   }
   $content = @(

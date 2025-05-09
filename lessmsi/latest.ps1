@@ -8,7 +8,7 @@ $project = "activescott/lessmsi"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName lessmsi -FileSelection {
   @(
     "lessmsi-${tag}.zip"
     "lessmsi.${version}.nupkg"

@@ -9,7 +9,7 @@ $project = "wez/wezterm"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName wezterm -FileSelection {
   @(
     "WezTerm-windows-$version.zip"
     "WezTerm-windows-$version.zip.sha256"

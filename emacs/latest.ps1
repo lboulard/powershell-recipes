@@ -57,4 +57,4 @@ if (-not $files) {
   throw "no releases found"
 }
 
-Get-Url $files
+Get-Url $files -ProjectName emacs

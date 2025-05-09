@@ -69,5 +69,5 @@ $files = $maintained | ForEach-Object {
 $files
 
 if ($files) {
-  Get-Url $files
+  Get-Url $files -ProjectName golang
 }

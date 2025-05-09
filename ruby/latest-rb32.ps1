@@ -45,4 +45,4 @@ $headers = @{
   'Authorization' = 'token ' + $githubToken
 }
 
-Get-Url $files -Headers $headers
+Get-Url $files -Headers $headers -ProjectName ruby3.2

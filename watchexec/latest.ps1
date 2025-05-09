@@ -8,7 +8,7 @@ $tagPattern = "v(?<version>\d+\.\d+\.\d+)"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName watchexec -FileSelection {
   @(
     "watchexec-$version-x86_64-pc-windows-msvc.zip"
     "watchexec-$version-x86_64-pc-windows-msvc.zip.sha256"
@@ -26,5 +26,5 @@ if ($false) {
     "watchexec-$goodVersion-x86_64-pc-windows-msvc.zip.b3"
   ) | ForEach-Object { "https://github.com/$project/releases/download/v$goodVersion/$_" }
 
-  Get-Url $files
+  Get-Url $files -ProjectName watchexec
 }

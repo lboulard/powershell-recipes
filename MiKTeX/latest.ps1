@@ -39,7 +39,7 @@ if ($files -match $fileRegex) {
 
 Write-Host "# last Version $version"
 
-Get-Url $files
+Get-Url $files -ProjectName miktex
 
 #####
 
@@ -68,5 +68,5 @@ if ($files -match $fileRegex) {
 
 Write-Host "# last Version $version"
 
-Get-Url $files
+Get-Url $files -ProjectName miktex
 

@@ -8,7 +8,7 @@ $tagPattern = "uncrustify-(?<version>\d+\.\d+\.\d+)"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName uncrustify -FileSelection {
   # uncrustify-0.79.0_f-win64.zip
   @(
     "uncrustify-${version}_f-win64.zip"

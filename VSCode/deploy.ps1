@@ -1,5 +1,11 @@
 $ErrorActionPreference = "Stop"
 
+$location = (Get-RecipesConfig).GetFetchLocation('vscode')
+if ($location) {
+  Write-Host "Moving to $location"
+  Set-Location $location
+}
+
 $nameRegex = "^VSCode-win32-x64-(?<version>\d+\.\d+\.\d+)\.zip$"
 
 $folderRegex = "^(?<version>\d+\.\d+\.\d+)$"

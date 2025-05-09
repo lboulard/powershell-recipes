@@ -9,7 +9,7 @@ $project = "PowerShell/Win32-OpenSSH"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName win32-openssh -FileSelection {
   # very ugly but does the job
   $global:revision = $revision
   @(
@@ -19,19 +19,30 @@ Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
 }
 
 if (!$error) {
-  @(
+  $location = (Get-RecipesConfig).GetFetchLocation('win32-openssh')
+  try {
+    $formerLocation = Get-Location
+    Set-Location $location
+    @(
     ("OpenSSH-Win64.msi", "OpenSSH-Win64-$revision.msi"),
     ("OpenSSH-Win64.zip", "OpenSSH-Win64-$revision.zip")
-  ) | ForEach-Object {
-    try {
-      $link = $_[0]
-      $path = $_[1]
-      $updated = (Update-HardLink $path $link -CreateIfAbsent).Updated
-      Write-Host "hardlink: $link -> $path" -NoNewline
-      Write-Host $(if ($updated) { "" } else { " (nochange)" })
-    } catch {
-      Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
-      break
+    ) | ForEach-Object {
+      try {
+        $link = $_[0]
+        $path = $_[1]
+        $updated = (Update-HardLink $path $link -CreateIfAbsent).Updated
+        Write-Host "hardlink: $link -> $path" -NoNewline
+        Write-Host $(if ($updated) { "" } else { " (nochange)" })
+      }
+      catch {
+        Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
+        break
+      }
+    }
+  }
+  finally {
+    if ($formerLocation) {
+      Set-Location $formerLocation
     }
   }
 }

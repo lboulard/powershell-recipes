@@ -8,7 +8,7 @@ $project = "editorconfig/editorconfig-notepad-plus-plus"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName notepad++plugins -FileSelection {
   $flatVersion = $version -replace '\.', ''
   @(
     "NppEditorConfig-${flatVersion}-x64.zip"

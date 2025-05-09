@@ -145,7 +145,7 @@ $script:PowerShellUserAgent = `
 $script:UserAgents = @{
   "None"             = ""
   "Curl"             = "curl/8.9.0"
-  "Chome"            = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome
+  "Chrome"           = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome
   "Safari"           = [Microsoft.PowerShell.Commands.PSUserAgent]::Safari
   "Firefox"          = [Microsoft.PowerShell.Commands.PSUserAgent]::Firefox
   "InternetExplorer" = [Microsoft.PowerShell.Commands.PSUserAgent]::InternetExplorer
@@ -233,6 +233,33 @@ class Config {
       $useragent = script:interpolate $useragent $script:UserAgents
     }
     return $useragent
+  }
+
+  [string] GetFetchLocation([string]$Project) {
+    $location = $null
+    foreach ($item in $this.Locate("location", "fetch")) {
+      $subsection, $value = $item
+      if (!$subsection -or ($Project -eq $subsection)) {
+        $location = $value
+      }
+    }
+    $location = if ($null -eq $location) {
+      ""
+    } else {
+      script:interpolate $location @{ "Project" = $Project }
+    }
+    return $location
+  }
+
+  [string] ResolveLocation([string]$Project, [string]$path) {
+    if (Split-Path -Path $path -IsAbsolute) {
+      throw "$path`: absolute path not resolvable per project"
+    }
+    $folderDest = $this.GetFetchLocation($Project)
+    if ($folderDest) {
+      $path = Join-Path $folderDest $path
+    }
+    return $path
   }
 }
 

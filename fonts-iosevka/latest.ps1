@@ -8,7 +8,7 @@ $project = "be5invis/Iosevka"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName fonts-iosevka -FileSelection {
   # only fetch a subset of all fonts available (ttf, ttf-fixed, ttf-term, ttc)
   $releaseName = $tag.TrimStart('v')
   @(

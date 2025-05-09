@@ -9,6 +9,12 @@ $releaseURL = "https://code.visualstudio.com/updates"
 $downloadURL = "https://update.code.visualstudio.com"
 $versionPattern = "(?<version>\d+\.\d+\.\d+)"
 
+$location = (Get-RecipesConfig).GetFetchLocation('vscode')
+if ($location) {
+  Write-Host "Moving to $location"
+  Set-Location $location
+}
+
 function Get-HTML {
   param(
     [Parameter(Mandatory = $true)]

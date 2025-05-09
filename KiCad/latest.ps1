@@ -29,18 +29,6 @@ $version = $Matches[1]
 
 $repo = "https://github.com/$project/releases/download$version_path"
 
-$files = , "kicad-$version-x86_64.exe"
+$url = , "$repo#kicad-$version-x86_64.exe"
 
-$files | ForEach {
-    Write-Host "# $_"
-    if (-Not (Test-Path $_)) {
-        try {
-            $tmpFile = "dl_$_"
-            Invoke-WebRequest -Uri "$repo/$_" -OutFile $tmpFile
-            Move-Item -Path $tmpFile -Destination "$_"
-        } catch {
-            Write-Error "Error: $($_.Exception.Message)"
-            break
-        }
-    }
-}
+Get-Url $url -ProjectName kicad

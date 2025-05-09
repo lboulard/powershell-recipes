@@ -9,7 +9,7 @@ $project = "tukaani-project/xz"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName xz -FileSelection {
   @(
     "xz-$version-windows.zip"
     "xz-$version-windows.zip.sig"

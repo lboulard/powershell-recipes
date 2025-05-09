@@ -26,7 +26,7 @@ AllowNoIcons=yes
 PrivilegesRequired=lowest
 OutputDir=.
 OutputBaseFilename=vscode-lboulard-{#VSCodeVersion}
-SetupIconFile=supplies\VSCode.ico
+SetupIconFile={#SourcePath}\supplies\VSCode.ico
 SolidCompression=yes
 WizardStyle=modern
 MinVersion=10.0.19045
@@ -41,9 +41,9 @@ Name: "dosbatch"; Description: "Create code.cmd for CMD.EXE"; GroupDescription: 
 
 [Files]
 Source: "files-{#VSCodeVersion}\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion allowunsafefiles createallsubdirs
-Source: "supplies\jq.exe"; DestDir: "{tmp}"; Tasks: applysettings
-Source: "supplies\settings.json"; DestDir: "{tmp}"; AfterInstall: ApplySettings; Tasks: applysettings
-Source: "supplies\code.tmpl.cmd"; DestDir: "{tmp}"; AfterInstall: InstallDosBatch; Tasks: dosbatch
+Source: "{#SourcePath}\supplies\jq.exe"; DestDir: "{tmp}"; Tasks: applysettings
+Source: "{#SourcePath}\supplies\settings.json"; DestDir: "{tmp}"; AfterInstall: ApplySettings; Tasks: applysettings
+Source: "{#SourcePath}\supplies\code.tmpl.cmd"; DestDir: "{tmp}"; AfterInstall: InstallDosBatch; Tasks: dosbatch
 
 #define ShellGroup "vscode"
 #define ShellText "Open with Code"

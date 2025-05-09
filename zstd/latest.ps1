@@ -10,7 +10,7 @@ $project = "facebook/zstd"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName zstd -FileSelection {
   @(
     "zstd-${tag}-win64.zip"
     "zstd-${version}.tar.gz"

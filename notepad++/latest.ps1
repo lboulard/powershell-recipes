@@ -8,7 +8,7 @@ $project = "notepad-plus-plus/notepad-plus-plus"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName notepad++8 -FileSelection {
   @(
     "npp.$version.Installer.exe",
     "npp.$version.Installer.exe.sig",

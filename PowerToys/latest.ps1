@@ -8,7 +8,7 @@ $project = "microsoft/PowerToys"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName powertoys -FileSelection {
   @(
     "PowerToysUserSetup-$version-x64.exe"
     "PowerToysSetup-$version-x64.exe"

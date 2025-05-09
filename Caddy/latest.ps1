@@ -10,7 +10,7 @@ $project = "caddyserver/caddy"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName caddy -FileSelection {
   @(
     "caddy_${version}_windows_amd64.zip"
     "caddy_${version}_windows_amd64.zip.sig"

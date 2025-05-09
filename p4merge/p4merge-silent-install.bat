@@ -1,6 +1,9 @@
 :: https://community.perforce.com/s/article/17304
 @SETLOCAL
 
+@CALL "%~dp0\..\bin\getfetchlocation.bat" p4merge
+CD /D "%LOCATION%"
+
 @SET DIR=p4-2024.4
 
 @IF NOT EXIST %DIR% CD /D %~dp0

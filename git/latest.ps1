@@ -9,7 +9,7 @@ $project = "git-for-windows/git"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName git -FileSelection {
   if ([int]$build -gt 1) {
     $build = ".$build"
   } else {

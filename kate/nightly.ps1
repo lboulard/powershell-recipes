@@ -33,5 +33,5 @@ $files = @(
 ) | ForEach-Object { "${repo}/$_#${nightly}/$_" }
 
 if ($files) {
-  Get-Url $files
+  Get-Url $files -ProjectName kate
 }

@@ -60,13 +60,15 @@ if ($false) {
   # Direct download does not work
   Get-Url $files -Headers @{
     'Referer'    = 'https://www.techspot.com/'
-  }
+  } -ProjectName irfanview
 }
 
 # https://www.fosshub.com/IrfanView.html?dwl=iview470_x64_setup.exe
 # https://www.fosshub.com/IrfanView.html?dwl=iview470_plugins_x64_setup.exe
 
 # Create URL file to downloads
+
+$destDir = (Get-RecipesConfig).ResolveLocation('irfanview', $destDir)
 
 @(
   "iview${cleanVersion}_x64_setup.exe"

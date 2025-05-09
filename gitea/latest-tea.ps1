@@ -57,4 +57,4 @@ $files = $files | % {
   "$_#tea-${version}/${name}"
 }
 
-Get-Url $files
+Get-Url $files -ProjectName gitea-tea

@@ -8,7 +8,7 @@ $project = "microsoft/cascadia-code"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName fonts-cascadia -FileSelection {
   @(
     "CascadiaCode-${version}.zip"
   )

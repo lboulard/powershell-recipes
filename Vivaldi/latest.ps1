@@ -36,4 +36,4 @@ if ($files -match $fileRegex) {
 
 Write-Host "# last Version $version"
 
-Get-Url $files
+Get-Url $files -ProjectName vivaldi

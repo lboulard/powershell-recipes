@@ -8,7 +8,7 @@ $project = "lboulard/vim-win32-build"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName vim -FileSelection {
   @(
     "gvim-$version-amd64.exe"
     # "gvim-$version-amd64.zip"

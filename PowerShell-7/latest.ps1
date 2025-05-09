@@ -8,7 +8,7 @@ $tagPattern = "v(?<version>\d+\.\d+\.\d+)"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName powershell-7 -FileSelection {
   @(
     "PowerShell-$version-win-x64.msi"
     "PowerShell-$version-win-x64.zip"

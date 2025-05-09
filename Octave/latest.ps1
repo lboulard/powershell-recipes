@@ -42,4 +42,4 @@ Write-Host "# last Version $version"
 
 $files
 
-Get-Url $files
+Get-Url $files -ProjectName octave

@@ -8,7 +8,7 @@ $project = "d0vgan/nppexec"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName notepad++plugins -FileSelection {
   @(
     # Notepad 7.6+
     "NppExec_$($version)_dll_x64_PA.zip"
