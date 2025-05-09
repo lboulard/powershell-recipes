@@ -737,7 +737,7 @@ def install(register_only=False):
 ### Create [Files] section for Inno Setup
 
 # Source: "OZHANDIN.TTF"; DestDir: "{autofonts}"; FontInstall: "Oz Handicraft BT"; \
-#  Flags: ignoreversion comparetimestamp uninsneveruninstall
+#  Flags: ignoreversion comparetimestamp uninsrestartdelete
 
 
 def inno_file_line(writer, font_path, ttf_dest):
@@ -748,7 +748,7 @@ def inno_file_line(writer, font_path, ttf_dest):
             f'DestDir: "{{autofonts}}\\{ttf_dest}"; ', end="", flush=False, file=writer
         )
         print(f'FontInstall: "{font_name}"; ', end="", flush=False, file=writer)
-        print("Flags: ignoreversion comparetimestamp uninsneveruninstall", file=writer)
+        print("Flags: ignoreversion comparetimestamp uninsrestartdelete", file=writer)
     else:
         print(f'// Source: "{font_path}"; // cannot find font name', file=writer)
 

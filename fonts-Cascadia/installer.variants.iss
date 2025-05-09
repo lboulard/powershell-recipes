@@ -5,6 +5,7 @@
 #define MyAppPublisher "Microsoft © / lboulard.net"
 #define MyAppURL "https://github.com/microsoft/cascadia-code"
 #define MyAppLicense "LICENSE.txt"
+#define MyAppInstaller "fonts-cascadiacode-variants"
 
 #include "version.inc.iss"
 
@@ -23,7 +24,7 @@ LicenseFile={#MyAppLicense}
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=fonts-cascadiacode-variants-{#MyAppVersion}
+OutputBaseFilename={#MyAppInstaller}-{#MyAppVersion}
 OutputDir=installers
 SolidCompression=yes
 ; Compression=none

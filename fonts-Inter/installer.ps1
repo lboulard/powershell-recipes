@@ -50,11 +50,11 @@ function Get-FontNameFromFile {
                 $fontName = [System.Runtime.InteropServices.Marshal]::PtrToStringUni($buffer)
             }
 
-            [System.Runtime.InteropServices.Marshal]::FreeHGlobal($buffer)
+            [System.Runtime.InteropServices.Marshal]::FreeHGlobal($buffer) | Out-Null
         }
     } finally {
         # Remove the font resource
-        [Gdi32]::RemoveFontResourceEx($fontFilePath, [Gdi32]::FR_PRIVATE, [IntPtr]::Zero)
+        [Gdi32]::RemoveFontResourceEx($fontFilePath, [Gdi32]::FR_PRIVATE, [IntPtr]::Zero) | Out-Null
     }
 
     return $fontName
@@ -86,7 +86,7 @@ $files = Get-ChildItem $release -Recurse -Filter '*.ttf' | ForEach-Object {
         "Source: `"${fontFilePath}`""
         "DestDir: `"{autofonts}\${release}`""
         "FontInstall: `"${fontName}`""
-        "Flags: ignoreversion comparetimestamp uninsneveruninstall"
+        "Flags: ignoreversion comparetimestamp uninsrestartdelete"
     ) -join "; "
 }
 

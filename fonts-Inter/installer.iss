@@ -5,6 +5,7 @@
 #define MyAppPublisher "Rasmus Andersson / lboulard.net"
 #define MyAppURL "https://rsms.me/inter/"
 #define MyAppLicense ""
+#define MyAppInstaller "fonts-inter"
 
 #include "version.inc.iss"
 
@@ -23,7 +24,7 @@ LicenseFile={#MyAppLicense}
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
-OutputBaseFilename=fonts-inter-{#MyAppVersion}
+OutputBaseFilename={#MyAppInstaller}-{#MyAppVersion}
 OutputDir=installers
 SolidCompression=yes
 ; Compression=none

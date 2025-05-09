@@ -1,10 +1,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Iosevka Fonts"
-#define MyAppVersion "UnknownVersion"
+#define MyAppVersion "undefined"
 #define MyAppPublisher "Belleve (be5invis) / lboulard.net"
 #define MyAppURL "https://typeof.net/Iosevka/"
-#define MyAppExeName "MyProg-x64.exe"
+#define MyAppLicense "LICENSE.md"
+#define MyAppInstaller "fonts-iosevka"
 
 #include "version.inc.iss"
 
@@ -19,11 +20,11 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
-LicenseFile=LICENSE.md
+LicenseFile={#MyAppLicense}
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline
-OutputBaseFilename=fonts-iosevka-{#MyAppVersion}
+OutputBaseFilename={#MyAppInstaller}-{#MyAppVersion}
 OutputDir=installers
 SolidCompression=yes
 ; Compression=none
@@ -57,5 +58,5 @@ end;
 
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
-  Result := (PageID = wpReady);
+  Result := (PageID = wpReady) or (PageID = wpSelectDir);
 end;
