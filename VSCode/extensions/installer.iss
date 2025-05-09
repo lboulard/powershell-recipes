@@ -13,7 +13,6 @@ AppVersion={#Version}
 WizardStyle=modern
 DefaultDirName={autopf}\lboulard\VSCodeExtensions
 DefaultGroupName=lboulard\VSCodeExtensions
-SourceDir=.
 OutputDir=installers
 OutputBaseFilename=vscode-extensions-{#Version}
 PrivilegesRequired=lowest

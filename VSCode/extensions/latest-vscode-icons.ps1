@@ -8,7 +8,7 @@ $project = "vscode-icons/vscode-icons"
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName vscode-extensions -FileSelection {
   @(
     "vscode-icons-${version}.vsix"
   )

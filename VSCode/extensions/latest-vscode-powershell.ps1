@@ -21,7 +21,7 @@ $files = Find-GitHubReleaseFromAsset $project `
   -Token $githubToken -PreRelease $true
 
 if ($files) {
-  Get-Url $files
+  Get-Url $files -ProjectName vscode-extensions
 } else {
   Write-Host "no files found"
 }
