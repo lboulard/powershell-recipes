@@ -65,6 +65,7 @@
 @SET "X=000000000%~1"
 @SET "Y=000000000%~2"
 @SET "Z=000000000%~3"
+@IF "%~3"=="Installer" SET Z=00000000
 @SET "__VERSION=%X:~-8%.%Y:~-8%.%Z:~-8%"
 @IF %VERSION%==notfound GOTO :update
 @IF %__VERSION% GTR %_VERSION% GOTO :update
