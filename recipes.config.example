@@ -1,0 +1,209 @@
+[location "7zip"]
+	fetch = D:\\Installs\\7-zip
+
+[location "7zip-zstd"]
+	fetch = D:\\Installs\\7-zip\\7-Zip-zstd
+
+[location "age"]
+	fetch = D:/Installs/cmd/age
+
+[location "busybox"]
+	fetch = ${LBPROGRAMS}/busybox
+
+[location "caddy"]
+	fetch = D:/Installs/WWW/caddy
+
+[location "chezmoi"]
+	fetch = D:/Installs/cmd/chezmoi
+
+[location "clink"]
+	fetch = D:/Installs/cmd/clink
+
+[location "dirx"]
+	fetch = D:/Installs/cmd/clink
+
+[location "conemu"]
+	fetch = D:/Installs/cmd/ConEmu
+
+[location "croc"]
+	fetch = D:/Installs/cmd/croc
+
+[location "emacs"]
+	fetch = D:/Installs/editors/emacs
+
+[location "elixir"]
+	fetch = D:/Installs/dev/erlang/elixir
+
+[location "erlang"]
+	fetch = D:/Installs/dev/erlang
+
+[location "git"]
+	fetch = D:/Installs/dev/git
+
+[location "git-lfs"]
+	fetch = D:/Installs/dev/git/git-lfs
+
+[location "p4merge"]
+	fetch = D:/Installs/dev/git/p4merge
+
+[location "gitea"]
+	fetch = D:/Installs/dev/git/gitea
+
+[location "gitea-tea"]
+	fetch = D:/Installs/dev/git/gitea
+
+[location "golang"]
+	fetch = D:/Installs/dev/go
+
+[location "llvm"]
+	fetch = D:/Installs/dev/C++/llvm
+
+[location "java-azul"]
+	fetch = D:/Installs/dev/java/Azul
+
+[location "pandoc"]
+	fetch = D:/Installs/dev/LaTeX/pandoc
+
+[location "miktex"]
+	fetch = D:/Installs/dev/LaTeX/MiKTeX
+
+[location "ninja"]
+	fetch = D:/Installs/dev/ninja
+
+[location "msys2"]
+	fetch = D:/Installs/dev/msys2
+
+[location "ruby"]
+	fetch = D:/Installs/dev/ruby
+[location "ruby2.7"]
+	fetch = D:/Installs/dev/ruby
+[location "ruby3.1"]
+	fetch = D:/Installs/dev/ruby
+[location "ruby3.2"]
+	fetch = D:/Installs/dev/ruby
+[location "ruby3.3"]
+	fetch = D:/Installs/dev/ruby
+[location "ruby3.4"]
+	fetch = D:/Installs/dev/ruby
+
+[location "zig"]
+	fetch = D:/Installs/dev/zig
+
+[location "zls"]
+	fetch = D:/Installs/dev/zig
+
+[location "hashcat"]
+	fetch = D:/Installs/cmd/hashcat
+
+[location "initool"]
+	fetch = D:/Installs/cmd/initool
+
+[location "lessmsi"]
+	fetch = D:/Installs/cmd/lessmsi
+
+[location "lz4"]
+	fetch = D:/Installs/cmd/lz4
+
+[location "powershell-7"]
+	fetch = D:/Installs/cmd/PowerShell-7
+
+[location "uncrustify"]
+	fetch = D:/Installs/cmd/uncrustify
+
+[location "watchexec"]
+	fetch = D:/Installs/cmd/watchexec
+
+[location "wezterm"]
+	fetch = D:/Installs/cmd/WezTerm
+
+[location "win32-openssh"]
+	fetch = D:/Installs/cmd/Win32-OpenSSH
+
+[location "microsoft-terminal"]
+	fetch = D:/Installs/cmd/wt
+
+[location "xz"]
+	fetch = D:/Installs/cmd/xz
+
+[location "zstd"]
+	fetch = D:/Installs/cmd/zstd
+
+[location "emacs"]
+	fetch = D:/Installs/editors/emacs
+
+[location "kate"]
+	fetch = D:/Installs/editors/kate
+
+[location "notepad++8"]
+	fetch = D:/Installs/editors/npp8
+
+[location "notepad++plugins"]
+	fetch = D:/Installs/editors/npp8/plugins
+
+[location "scite"]
+	fetch = D:/Installs/editors/scite
+
+[location "vim-lboulard"]
+	fetch = D:/Installs/editors/vim
+
+[location "vscode"]
+	fetch = D:/Installs/editors/VSCode
+
+[location "vscode-extensions"]
+	fetch = D:/Installs/editors/VSCode/extensions
+
+[location "fonts-iosevka"]
+	fetch = D:/Installs/Fonts/iosevka
+
+[location "fonts-cascadia"]
+	fetch = D:/Installs/Fonts/Cascadia
+
+[location "fonts-ibm-plex"]
+	fetch = D:/Installs/Fonts/IBM Plex
+
+[location "fonts-inter"]
+	fetch = D:/Installs/Fonts/Inter
+
+[location "irfanview"]
+	fetch = D:/Installs/graphics/irfanview
+
+[location "vlc"]
+	fetch = D:/Installs/players/VLC
+
+[location "powertoys"]
+	fetch = D:/Installs/shell/PowerToys
+
+[location "vivaldi"]
+	fetch = D:/Installs/WWW/Vivaldi
+
+[location "kicad"]
+	fetch = D:/Installs/CAD/KiCad
+
+[location "octave"]
+	fetch = D:/Installs/tools/Octave
+
+[location "python"]
+	fetch = D:/Installs/dev/Python
+
+[location "python3.6"]
+	fetch = D:/Installs/dev/Python3.6
+[location "python3.7"]
+	fetch = D:/Installs/dev/Python3.7
+[location "python3.8"]
+	fetch = D:/Installs/dev/Python3.8
+[location "python3.9"]
+	fetch = D:/Installs/dev/Python3.9
+[location "python3.10"]
+	fetch = D:/Installs/dev/Python3.10
+[location "python3.11"]
+	fetch = D:/Installs/dev/Python3.11
+[location "python3.12"]
+	fetch = D:/Installs/dev/Python3.12
+[location "python3.13"]
+	fetch = D:/Installs/dev/Python3.13
+[location "python3.14"]
+	fetch = D:/Installs/dev/Python3.14
+[location "python3.15"]
+	fetch = D:/Installs/dev/Python3.15
+
+# vim: ft=gitconfig
