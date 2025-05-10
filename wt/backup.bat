@@ -1,6 +1,6 @@
 @SETLOCAL
 
-@CALL "%~dp0..\bin\getfetchlocation.bat" "vim-lboulard"
+@CALL "%~dp0..\bin\getfetchlocation.bat" "microsoft-terminal"
 CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 

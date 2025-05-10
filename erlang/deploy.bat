@@ -1,6 +1,6 @@
 @SETLOCAL
 
-@CALL "%~dp0..\bin\getfetchlocation.bat" "chezmoi"
+@CALL "%~dp0..\bin\getfetchlocation.bat" "erlang"
 CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 

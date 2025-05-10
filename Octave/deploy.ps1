@@ -18,7 +18,6 @@ else {
     $dest = $lbPrograms
 }
 $appsDir = Join-Path $dest "Apps"
-Set-Location -Path $PSScriptRoot
 
 # Get all matching archives and parse version info
 $archives = Get-ChildItem -Filter "octave-*-w64.7z" | Where-Object {

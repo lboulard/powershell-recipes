@@ -1,7 +1,7 @@
 @SETLOCAL
 @CHCP 65001 >NUL
 
-@CALL "%~dp0..\bin\getfetchlocation.bat" "ruby2.7"
+@CALL "%~dp0..\bin\getfetchlocation.bat" "ruby3.4"
 CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 

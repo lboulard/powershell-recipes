@@ -1,6 +1,9 @@
 @SETLOCAL
 @CHCP 65001 >NUL
-@CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "ruby3.1"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
 
 @REM file name shall be RubyXY-silent-install{-default}
 @SET "MYSELF=%~n0"
