@@ -1,7 +1,5 @@
 @SETLOCAL
 @CHCP 65001 >NUL:
-@CD /D "%~dp0"
-@IF ERRORLEVEL 1 GOTO :exit
 
 :: check if not admin
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
@@ -11,11 +9,17 @@
   @GOTO :exit
 )
 
+@CALL "%~dp0..\bin\getfetchlocation.bat" "clink"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
+
 @IF "%LBPROGRAMS%" == "" @(
   @ECHO ** ERROR, LBPROGRAMS envrironment variable not defined
   @CALL :errorlevel 1
   @GOTO :exit
 )
+
+@SET "DEST=%LBPROGRAMS%\local"
 
 @SET VERSION=notfound
 @SET ARCHIVE=
@@ -31,12 +35,12 @@
 
 @where /q pwsh.exe
 @IF %ERRORLEVEL% equ 0 (
-pwsh.exe -NoProfile -Ex Unrestricted -Command "Expand-Archive -LiteralPath $env:ARCHIVE -DestinationPath $env:LBPROGRAMS\clink.$env:VERSION -Verbose -Force"
+pwsh.exe -NoProfile -Ex Unrestricted -Command "Expand-Archive -LiteralPath $env:ARCHIVE -DestinationPath '%DEST%\clink.%VERSION%' -Verbose -Force"
 ) ELSE (
-powershell.exe -NoProfile -Ex Unrestricted -Command "Expand-Archive -LiteralPath $env:ARCHIVE -DestinationPath $env:LBPROGRAMS\clink.$env:VERSION -Verbose -Force"
+powershell.exe -NoProfile -Ex Unrestricted -Command "Expand-Archive -LiteralPath $env:ARCHIVE -DestinationPath '%DEST%\clink.%VERSION%' -Verbose -Force"
 )
-IF EXIST "%LBPROGRAMS%\clink" RD "%LBPROGRAMS%\clink"
-MKLINK /J "%LBPROGRAMS%\clink" "%LBPROGRAMS%\clink.%VERSION%"
+IF EXIST "%DEST%\clink" RD "%DEST%\clink"
+MKLINK /J "%DEST%\clink" "%DEST%\clink.%VERSION%"
 
 @:: Pause if not interactive
 @:exit

@@ -10,7 +10,7 @@ $tagPattern = "(?<tag>v(?<version>\d+\.\d+(\.\d+)?)-(?<subversion>v\d+\.\d+(\.\d
 
 Import-Module lboulard-Recipes
 
-Get-GitHubAssetsOfLatestRelease $project $tagPattern -FileSelection {
+Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName '7zip-zstd' -FileSelection {
   @(
     "7z${version}-zstd-x64.exe"
     "Codecs-x64.7z"

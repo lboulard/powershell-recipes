@@ -1,5 +1,7 @@
 @SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
-CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "xz"
+CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 @ECHO OFF
 
@@ -52,7 +54,7 @@ ECHO ON
 
 @REM install 
 @SET "OUTDIR=%WORKDIR%\bin_x86-64"
-@SET "DEST=%LBPROGRAMS%\bin"
+@SET "DEST=%LBPROGRAMS%\local\bin"
 
 XCOPY /Y /R /B /J %OUTDIR%\*.exe "%DEST%\"
 XCOPY /Y /R /B /J %OUTDIR%\*.dll "%DEST%\"
@@ -92,6 +94,7 @@ GOTO :EOF
 @ECHO OFF
 :: Pause if not interactive
 SET ERR=%ERRORLEVEL%
+TYPE NUL>NUL
 ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 IF NOT ERRORLEVEL 1 PAUSE
 ENDLOCAL&EXIT /B %ERR%

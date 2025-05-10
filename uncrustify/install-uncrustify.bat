@@ -1,6 +1,8 @@
 @SETLOCAL
 @CHCP 65001 >NUL:
-@CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "uncrustify"
+CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 
 :: check if not admin

@@ -1,5 +1,7 @@
 @SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
-CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "chezmoi"
+CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 @ECHO OFF
 
@@ -45,7 +47,7 @@ SET "WORKDIR=%TEMP%\chezmoi-%VERSION%"
 SET "OUTDIR=%TEMP%\chezmoi-%VERSION%"
 SET "BINEXE=%OUTDIR%\chezmoi.exe"
 
-SET "DEST=%LBPROGRAMS%\bin"
+SET "DEST=%LBPROGRAMS%\local\bin"
 SET "BIN=%DEST%\chezmoi-%VERSION%.exe"
 SET "BINLINK=%DEST%\chezmoi.exe"
 

@@ -1,6 +1,9 @@
 @SETLOCAL ENABLEEXTENSIONS
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "vim-lboulard"
+CD /D "%LOCATION%"
 @ECHO OFF
-CD /D "%~dp0"
+@IF ERRORLEVEL 1 GOTO :exit
 
 SET VERSION=notfound
 SET PRG=

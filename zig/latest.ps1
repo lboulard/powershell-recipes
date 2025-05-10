@@ -183,6 +183,8 @@ function Verify-Checksum {
   return $false
 }
 
+$location = (Get-RecipesConfig).GetFetchLocation('zig')
+
 $folders = @{}  # remember created folder to create only once
 
 $files | ForEach-Object {
@@ -196,6 +198,8 @@ $files | ForEach-Object {
   }
   $checksum = $_.Sha256
   $size = $_.Size
+
+  $dest = Join-Path $location $dest
 
   if ($size) {
     Write-Host "# $dest`t$(Format-Bytes ${size})"

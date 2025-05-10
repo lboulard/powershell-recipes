@@ -1,7 +1,8 @@
 @SETLOCAL
-@ECHO OFF
+
 @CALL "%~dp0..\bin\getfetchlocation.bat" "microsoft-terminal"
 CD /D "%LOCATION%"
+@ECHO OFF
 
 SET VERSION=notfound
 SET ARCHIVE=

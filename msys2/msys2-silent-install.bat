@@ -1,7 +1,10 @@
 @SETLOCAL EnableExtensions EnableDelayedExpansion
 @CHCP 65001 >NUL:
-@CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "msys2"
+CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
+@ECHO OFF
 
 @SET VERSION=notfound
 @SET PRG=

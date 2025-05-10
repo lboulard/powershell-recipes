@@ -1,9 +1,11 @@
 @SETLOCAL
 @CHCP 65001 >NUL:
-@CD /D "%~dp0"
-@IF ERRORLEVEL 1 GOTO :exit
 
+@CALL "%~dp0..\bin\getfetchlocation.bat" "powershell-7"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
 @ECHO OFF
+
 SET VERSION=notfound
 SET ARCHIVE=
 FOR %%f IN ("PowerShell-*.msi") DO (

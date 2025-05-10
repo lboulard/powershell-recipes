@@ -1,5 +1,7 @@
 @SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
-CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "java-azul"
+CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 @ECHO OFF
 
@@ -44,7 +46,7 @@ SET "WORKDIR=%TEMP%\lz4-%VERSION%-win64"
 SET "OUTDIR=%TEMP%\lz4-%VERSION%-win64"
 SET "BINEXE=%OUTDIR%\lz4.exe"
 
-SET "DEST=%LBPROGRAMS%\bin"
+SET "DEST=%LBPROGRAMS%\local\bin"
 SET "BIN=%DEST%\lz4-%VERSION%.exe"
 SET "BINLINK=%DEST%\lz4.exe"
 

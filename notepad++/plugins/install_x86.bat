@@ -1,5 +1,8 @@
 @SETLOCAL
-@CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "notepad++plugins"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
 
 :: check if admin
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1

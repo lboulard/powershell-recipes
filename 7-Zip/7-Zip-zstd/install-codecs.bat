@@ -1,6 +1,7 @@
 @SETLOCAL
 @CHCP 65001 >NUL:
-@CD /D "%~dp0"
+
+@CALL "%~dp0..\..\bin\getfetchlocation.bat" "7zip-zstd"
 @IF  ERRORLEVEL 1 GOTO :exit
 
 @IF NOT EXIST "%LOCALAPPDATA%\lboulard\logs\."^
@@ -21,7 +22,7 @@
 @SET "DEST=%ProgramFiles%\7-Zip\Codecs"
 @IF NOT EXIST "%DEST%\." MD "%DEST%
 
-XCOPY /Y /S /B "%~dp0Codecs-x64\*" "%DEST%\"
+XCOPY /Y /S /B "%LOCATION%\Codecs-x64\*" "%DEST%\"
 
 @:: Pause if not interactive
 @:exit

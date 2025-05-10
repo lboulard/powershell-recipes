@@ -1,2 +1,1 @@
-@CD /D "%~dp0"
-@pandoc-silent-install.bat uninstall
+@"%~dp0pandoc-silent-install.bat" uninstall

@@ -1,5 +1,7 @@
 @SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
-CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "zstd"
+CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 @ECHO OFF
 
@@ -46,7 +48,7 @@ SET "WORKDIR=%TEMP%\zstd-%VERSION%"
 SET "OUTDIR=%TEMP%\zstd-%VERSION%\zstd-v%VERSION%-win64"
 SET "BINEXE=%OUTDIR%\zstd.exe"
 
-SET "DEST=%LBPROGRAMS%\bin"
+SET "DEST=%LBPROGRAMS%\local\bin"
 SET "BIN=%DEST%\zstd-%VERSION%.exe"
 SET "BINLINK=%DEST%\zstd.exe"
 
@@ -102,6 +104,7 @@ GOTO :EOF
 @ECHO OFF
 :: Pause if not interactive
 SET ERR=%ERRORLEVEL%
+TYPE NUL>NUL
 ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 IF NOT ERRORLEVEL 1 PAUSE
 ENDLOCAL&EXIT /B %ERR%

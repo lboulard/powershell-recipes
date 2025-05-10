@@ -1,7 +1,5 @@
 @SETLOCAL
-@CHCP 65001 >NUL:
-@CD /D "%~dp0"
-@IF ERRORLEVEL 1 GOTO :exit
+@CHCP 65001 >NUL
 
 :: check if not admin
 @fsutil dirty query %SYSTEMDRIVE% >nul 2>&1
@@ -10,6 +8,10 @@
   @CALL :errorlevel 128
   @GOTO :exit
 )
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "dirx"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
 
 @IF "%LBPROGRAMS%" == "" @(
   @ECHO ** ERROR, LBPROGRAMS envrironment variable not defined
@@ -37,7 +39,7 @@
 @IF %ERRORLEVEL% equ 0 SET POWERSHELL=pwsh.exe
 
 %POWERSHELL% -NoProfile -Ex Unrestricted -Command^
- "Expand-Archive -LiteralPath '%ARCHIVE%' -DestinationPath '%LBPROGRAMS%\bin' -Verbose -Force"
+ "Expand-Archive -LiteralPath '%ARCHIVE%' -DestinationPath '%LBPROGRAMS%\local\bin' -Verbose -Force"
 @IF ERRORLEVEL 1 GOTO :exit
 
 @:: Pause if not interactive

@@ -1,5 +1,8 @@
 @SETLOCAL ENABLEDELAYEDEXPANSION
-@CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "notepad++plugins"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
 
 @SET ARCH=x64
 @SET "DESTDIR=%ARCH%"

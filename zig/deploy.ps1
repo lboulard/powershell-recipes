@@ -9,8 +9,8 @@ $versionRegex = "^zig-windows-x86_64-(?<version>(?<branch>\d+\.\d+)(?:\.\d+){0,2
 
 $folderRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.(?<devNumber>\d+))?$"
 $lbPrograms = $Env:LBPROGRAMS
-$prefix = $lbPrograms
-$root = $PSScriptRoot
+$prefix = Join-Path $lbPrograms "local"
+$root = Get-Location
 
 if (-not $prefix) {
   throw "prefix not defined. Is LBPROGRAMS environment variable defined?"
@@ -20,7 +20,7 @@ if (-not (Test-Path $prefix -PathType Container)) {
 }
 
 if ($DevOnly) {
-  echo "# Doing only development version install"
+  Write-Output "# Doing only development version install"
 }
 
 # ordered by version string

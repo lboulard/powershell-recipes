@@ -1,5 +1,8 @@
 @SETLOCAL
-CD /D "%~dp0"
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "pandoc"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
 @ECHO OFF
 
 SET VERSION=notfound

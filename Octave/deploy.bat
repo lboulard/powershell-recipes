@@ -1,4 +1,10 @@
 @SETLOCAL
+
+@CALL "%~dp0..\bin\getfetchlocation.bat" "octave"
+CD /D "%LOCATION%"
+@IF ERRORLEVEL 1 GOTO :exit
+@ECHO OFF
+
 @where /q pwsh.exe
 @IF %ERRORLEVEL% EQU 0 (
   pwsh.exe -noprofile "%~dpn0.ps1"
