@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$root = $PSScriptRoot
+$root = Get-Location
 
 $versionRegex = "^otp_win64_(?<version>\d+(?:\.\d+)+)\.zip$"
 
