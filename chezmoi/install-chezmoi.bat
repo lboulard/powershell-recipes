@@ -47,7 +47,7 @@ SET "WORKDIR=%TEMP%\chezmoi-%VERSION%"
 SET "OUTDIR=%TEMP%\chezmoi-%VERSION%"
 SET "BINEXE=%OUTDIR%\chezmoi.exe"
 
-SET "DEST=%LBPROGRAMS%\local\bin"
+SET "DEST=%LBPROGRAMS%\bin"
 SET "BIN=%DEST%\chezmoi-%VERSION%.exe"
 SET "BINLINK=%DEST%\chezmoi.exe"
 
