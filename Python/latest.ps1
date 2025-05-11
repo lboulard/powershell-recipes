@@ -1,14 +1,14 @@
 # Find latest release of Windows Python installer for a version
 
-# https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
-# $VerbosePreference = "Continue"
-
 param(
   [Parameter(Mandatory = $true)]
   [string]$Version,
 
   [switch]$GetDevRelease = $false
 )
+
+# https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
+# $VerbosePreference = "Continue"
 
 $ErrorActionPreference = "Stop"
 
@@ -19,27 +19,29 @@ if ($GetDevRelease) {
   $versionPattern += "(?<dev>(?<Pre>a|b|rc)(?<Rev>\d+))?"
 }
 
-function Get-HTML {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Uri
-  )
+function Get-HTML([string]$uri) {
   try {
     $html = New-Object -Com "HTMLFile"
     if ($html) {
+      Write-Verbose "Reading $Uri"
       $response = Invoke-HtmlRequest -Uri $Uri
+
       if ($html | Get-Member -Name "IHTMLDocument2_write" -Type Method) {
         # PowerShell 5.1
         $html.IHTMLDocument2_write($response.Content)
       } else {
         $html.write([ref]$response.Content)
       }
+      # $html | Write-Host
+      # $html | gm | Write-Host
       return $html
     } else {
       throw "failed to create HTML object"
     }
   } catch {
-    Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
+    if ($_.Exception) {
+      Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
+    }
     throw "download or HTML parsing failed"
   }
 }
@@ -49,7 +51,7 @@ $html = Get-HTML -Uri $pythonFTP
 $url = [System.Uri]$pythonFTP
 
 $links = @()
-$html.links | ForEach-Object { $_.pathname } | ForEach-Object {
+$html.Links | ForEach-Object { $_.pathname } | ForEach-Object {
   if ($_ -match $branchRegex) {
     @{target = $_; version = [version]$Matches.version }
   }
@@ -115,5 +117,5 @@ if ($mainVersion -gt [version]"3.10.9") {
 
 if ($files) {
   $files = $files | ForEach-Object { $pythonFTP + $mainVersion + "/" + $_ }
-  Get-Url $files
+  Get-Url $files -ProjectName "python${Version}"
 }
