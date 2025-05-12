@@ -56,11 +56,11 @@ Root: HKA; Subkey: "Software\Classes\.code-workspace"; ValueType: string; ValueN
 Root: HKA; Subkey: "Software\Classes\{#ShellGroup}.workspace"; ValueType: string; ValueName: ""; ValueData: "{#MyAppAssocName}"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\{#ShellGroup}.workspace"; ValueType: string; ValueName: "DefaultIcon"; ValueData: "{#ShellIcon}"
 Root: HKA; Subkey: "Software\Classes\{#ShellGroup}.workspace\shell\open\command"; ValueType: string; ValueName: ""; ValueData: "{#ShellOpenFile}"
-// Open PowerShell by default
+; Open PowerShell by default
 Root: HKA; Subkey: "Software\Classes\Microsoft.PowerShellScript.1\Shell\Open\Command"; ValueType: string; ValueName: ""; ValueData: "{#ShellOpenFile}"
 Root: HKA; Subkey: "Software\Classes\Microsoft.PowerShellData.1\Shell\Open\Command"; ValueType: string; ValueName: ""; ValueData: "{#ShellOpenFile}"
 Root: HKA; Subkey: "Software\Classes\Microsoft.PowerShellModule.1\Shell\Open\Command"; ValueType: string; ValueName: ""; ValueData: "{#ShellOpenFile}"
-// Edit from Explorer Menu
+; Edit from Explorer Menu
 Root: HKA; Subkey: "Software\Classes\Drive\shell\{#ShellGroup}"; ValueType: string; ValueName: ""; ValueData: "{#ShellText}"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\Drive\shell\{#ShellGroup}"; ValueType: string; ValueName: "Icon"; ValueData: "{#ShellIcon}"
 Root: HKA; Subkey: "Software\Classes\Drive\shell\{#ShellGroup}\command"; ValueType: string; ValueName: ""; ValueData:  "{#ShellOpen}"
@@ -70,7 +70,7 @@ Root: HKA; Subkey: "Software\Classes\Directory\shell\{#ShellGroup}\command"; Val
 Root: HKA; Subkey: "Software\Classes\Directory\background\shell\{#ShellGroup}"; ValueType: string; ValueName: ""; ValueData: "{#ShellText}"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\Directory\background\shell\{#ShellGroup}"; ValueType: string; ValueName: "Icon"; ValueData: "{#ShellIcon}"
 Root: HKA; Subkey: "Software\Classes\Directory\background\shell\{#ShellGroup}\command"; ValueType: string; ValueName: ""; ValueData:  "{#ShellOpen}"
-// Edit a file with Code
+; Edit a file with Code
 Root: HKA; Subkey: "Software\Classes\*\shell\{#ShellGroup}"; ValueType: string; ValueName: ""; ValueData: "Edit with Code"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\*\shell\{#ShellGroup}"; ValueType: string; ValueName: "Icon"; ValueData: "{#ShellIcon}"
 Root: HKA; Subkey: "Software\Classes\*\shell\{#ShellGroup}\command"; ValueType: string; ValueName: ""; ValueData:  "{#ShellOpenFile}"
@@ -78,7 +78,7 @@ Root: HKA; Subkey: "Software\Classes\*\shell\{#ShellGroup}\command"; ValueType: 
 
 [Icons]
 Name: "{group}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}"
-// Name: "{group}\{cm:UninstallProgram,{#VSCodeName}}"; Filename: "{uninstallexe}"
+; Name: "{group}\{cm:UninstallProgram,{#VSCodeName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}"; Tasks: desktopicon
 
 [Run]
@@ -310,6 +310,8 @@ begin
     'from your PATH environment variable.', '', False, InstallDosbatchPath);
   InstallDosbatchPage.Add('code.cmd installation &path:');
   InstallDosbatchPage.Values[0] := InstallDosbatchPath;
+
+  VSCodeSettingsPath := ExpandConstant('{userappdata}\Code\User\settings.json');
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
