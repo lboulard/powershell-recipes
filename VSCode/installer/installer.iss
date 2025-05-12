@@ -29,7 +29,7 @@ OutputBaseFilename=vscode-lboulard-{#VSCodeVersion}
 SetupIconFile={#SourcePath}\supplies\VSCode.ico
 SolidCompression=yes
 WizardStyle=modern
-MinVersion=10.0.19045
+MinVersion=10.0.19044
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
