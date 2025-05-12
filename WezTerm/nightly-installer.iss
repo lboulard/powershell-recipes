@@ -30,7 +30,7 @@ OutputBaseFilename=WezTerm-nightly-{#WezTermVersion}
 SetupIconFile={#SourcePath}\terminal.ico
 SolidCompression=yes
 WizardStyle=modern
-MinVersion=10.0.19045
+MinVersion=10.0.19044
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -70,7 +70,7 @@ Root: HKA; Subkey: "Software\Classes\Directory\background\shell\{#ShellGroup}\co
 
 [Icons]
 Name: "{group}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}"; AppUserModelID: "org.wezfurlong.wezterm"
-Name: "{autodesktop}\{#ProjectName}"; Filename: "{app}{#ProjectExecName}"; AppUserModelID: "org.wezfurlong.wezterm"; Tasks: desktopicon
+Name: "{autodesktop}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}"; AppUserModelID: "org.wezfurlong.wezterm"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#ProjectExecName}"; Description: "{cm:LaunchProgram,{#StringChange(ProjectName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent unchecked
