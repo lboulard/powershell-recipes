@@ -28,7 +28,7 @@ OutputDir=installers
 OutputBaseFilename=Microsoft.Windows.Terminal-Zip-{#TerminalVersion}
 SolidCompression=yes
 WizardStyle=modern
-MinVersion=10.0.19045
+MinVersion=10.0.19044
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -58,7 +58,7 @@ Root: HKA; Subkey: "Software\Classes\Directory\background\shell\{#ShellGroup}\co
 
 [Icons]
 Name: "{group}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}";
-Name: "{autodesktop}\{#ProjectName}"; Filename: "{app}{#ProjectExecName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#ProjectExecName}"; Description: "{cm:LaunchProgram,{#StringChange(ProjectName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent unchecked
@@ -128,6 +128,13 @@ begin
   Message.Parent := CustomPage.Surface;
   Message.Caption := Caption;
   Message.AutoSize := True;
+end;
+
+function NextButtonClick(CurPageID: Integer): Boolean;
+begin
+  if CurPageID = InstallDirShimPage.ID then
+    InstallShimPath := InstallDirShimPage.Values[0];
+  Result := True
 end;
 
 procedure RegisterPreviousData(PreviousDataKey: Integer);
