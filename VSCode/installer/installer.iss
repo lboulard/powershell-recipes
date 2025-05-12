@@ -79,7 +79,7 @@ Root: HKA; Subkey: "Software\Classes\*\shell\{#ShellGroup}\command"; ValueType: 
 [Icons]
 Name: "{group}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}"
 // Name: "{group}\{cm:UninstallProgram,{#VSCodeName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#ProjectName}"; Filename: "{app}{#ProjectExecName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#ProjectName}"; Filename: "{app}\{#ProjectExecName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#ProjectExecName}"; Description: "{cm:LaunchProgram,{#StringChange(ProjectName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent unchecked
