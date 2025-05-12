@@ -71,11 +71,6 @@ begin
     Result := '';
 end;
 
-procedure SaveVSCodePath(Path: String);
-begin
-  RegWriteStringValue(HKCU, LBRegistryKey + '\VisualStudioCode', '', Path);
-end;
-
 function OnNextButtonClick(Sender: TWizardPage) : Boolean;
 var
   FileName: String;

@@ -333,6 +333,7 @@ procedure RegisterPreviousData(PreviousDataKey: Integer);
 begin
   if WizardIsTaskSelected('dosbatch') then
   begin
+    RegWriteStringValue(HKCU, LBVisualStudioCodeRegistryKey, '', ExpandConstant('{app}\Code.exe'));
     SetPreviousData(PreviousDataKey, InstallDosbatchPathKey, InstallDosbatchPath);
     RegWriteStringValue(HKA, LBVisualStudioCodeRegistryKey, InstallDosbatchPathKey, InstallDosbatchPath);
     Log(InstallDosbatchPathKey + ': ' + InstallDosbatchPath);
