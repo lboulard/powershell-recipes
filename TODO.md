@@ -9,7 +9,7 @@
 - [ ] Java Azul: deploy shall be user configurable
 - [ ] lb/restore-links.bat: obsolete ?
 - [ ] MSYS2: _backup_msys64.bat, where to run?
-- [ ] Python: no tasks can run from repository, all scripts and assets shall be next - to data files
+- [ ] Python: fetch latest from repository, for silent install, assets shall be next to data files
 - [ ] Ruby: some much copy past, need full code refactoring
 - [ ] Microsoft-Terminal: should drop current name "wt" in use
 - [ ] zig: does zls language server need deploy script?
