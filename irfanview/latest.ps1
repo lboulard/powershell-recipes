@@ -83,6 +83,10 @@ $destDir = (Get-RecipesConfig).ResolveLocation('irfanview', $destDir)
 } | ForEach-Object {
   $url = $_.url
   $shortCut = $_.shortCut
+  $parent = Split-path $shortCut -Parent
+  if (!(Test-Path $parent)) {
+    New-Item $parent -ItemType Directory | Out-Null
+  }
   Write-Host "# ${shortCut}"
   @(
     "[InternetShortcut]"
@@ -90,29 +94,33 @@ $destDir = (Get-RecipesConfig).ResolveLocation('irfanview', $destDir)
   ) | Set-Content -Path $shortCut
 }
 
-
 $checksums.GetEnumerator() | ForEach-Object {
   $filename = $_.Name
   $checksum = $_.Value
+  $basename = Split-Path -Path $filename -LeafBase
 
   $dest = "${destDir}/${filename}"
   $checksumDest = "${dest}.sha256"
 
   if (Test-Path $dest) {
     $fiSrc = Get-Item $dest
-    $update = if (Test-Path $checksumDest) {
-      (Get-Item $checksumDest).LastWriteTime -ne $fiSrc.LastWriteTime
-    } else {
-      $true
-    }
+  } elseif (Test-Path "${destDir}/${basename}.url") {
+    $fiSrc = Get-Item "${destDir}/${basename}.url"
+  } else {
+    return
+  }
 
-    if ($update) {
-      Write-Host "# ${checksumDest}"
-      [System.IO.File]::WriteAllText($checksumDest, "$checksum *$filename")
-      (Get-Item $checksumDest).LastWriteTime = $fiSrc.LastWriteTime
-    } else {
-      Write-Host "# ${checksumDest} (no change)"
-    }
+  $update = if (Test-Path $checksumDest) {
+    (Get-Item $checksumDest).LastWriteTime -lt $fiSrc.LastWriteTime
+  } else {
+    $true
+  }
 
+  if ($update) {
+    Write-Host "# ${checksumDest}"
+    [System.IO.File]::WriteAllText($checksumDest, "$checksum *$filename")
+    (Get-Item $checksumDest).LastWriteTime = $fiSrc.LastWriteTime
+  } else {
+    Write-Host "# ${checksumDest} (no change)"
   }
 }
