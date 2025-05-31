@@ -11,9 +11,10 @@ CD /D "%LOCATION%"
 ) ELSE (
   PowerShell.exe -noprofile "%~dpn0.ps1"
 )
+@IF ERRORLEVEL 1 GOTO :exit
 
 @SET "LOG=%~n0.log"
-IF NOT ERRORLEVEL 1 "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"^
+"%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"^
   /I"%LOCATION%"^
   /O"%LOCATION%\installers"^
   "%~dpn0.iss" >"%LOG%"

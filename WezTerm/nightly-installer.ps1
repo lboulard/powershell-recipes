@@ -16,14 +16,14 @@ if (-not (Test-Path $dest -PathType Container)) {
 ## Breaks on multifile archive
 # Expand-Archive -DestinationPath $dest -LiteralPath $archive -Force
 
-if($false) {
+if ($false) {
   $shell = New-Object -ComObject "Shell.Application"
   # requires absolute path
   $zipFolder = $shell.NameSpace($archive)
   if (-not $zipFolder) {
     throw "${archive}: failed to access using Explorer Shell.Application"
   }
-  $item = $zipFolder.Items() | Where-Object { $_.name -Match $filenameRegex}
+  $item = $zipFolder.Items() | Where-Object { $_.name -Match $filenameRegex }
   if (-not $item) {
     throw "${archive}: distribution folder not found inside"
   }
@@ -37,8 +37,10 @@ if($false) {
   $shell.NameSpace($dest).CopyHere($item, 0x0614)
 }
 
+$workDir = Join-Path $dest "tmp"
+New-Item -Path $workDir -ItemType Directory -Force | Out-Null
 
-Push-Location $dest
+Push-Location $workDir
 try {
   Write-Host " ✓ " -NoNewline -ForegroundColor Green
   Write-Host "${archive}: expand to ${dest}"
@@ -51,7 +53,7 @@ try {
 }
 
 # find last version
-$lastVersion = Get-ChildItem $dest -Directory | Select-Object -ExpandProperty Name | ForEach-Object {
+$lastVersion = Get-ChildItem $Workdir -Directory | Select-Object -ExpandProperty Name | ForEach-Object {
   if ($_ -match $filenameRegex) {
     $Matches.version
   }
@@ -60,6 +62,18 @@ $lastVersion = Get-ChildItem $dest -Directory | Select-Object -ExpandProperty Na
 if (-not $lastVersion) {
   [Console]::Error.WriteLine($json)
   throw "no folder versions found"
+}
+
+$name = "WezTerm-windows-$lastVersion"
+
+try {
+  if (Test-Path (Join-Path $dest $name)) {
+    throw "$name`: already exists"
+  } else {
+    Move-Item -Path (Join-Path $workDir $name) -DestinationPath $dest
+  }
+} finally {
+  Remove-Item $workDir -Recurse -Force | Out-Null
 }
 
 $filename = "nightly-version.inc.iss"
