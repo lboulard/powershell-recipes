@@ -70,7 +70,7 @@ try {
   if (Test-Path (Join-Path $dest $name)) {
     throw "$name`: already exists"
   } else {
-    Move-Item -Path (Join-Path $workDir $name) -DestinationPath $dest
+    Move-Item -Path (Join-Path $workDir $name) -Destination $dest
   }
 } finally {
   Remove-Item $workDir -Recurse -Force | Out-Null
