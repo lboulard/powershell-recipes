@@ -14,17 +14,21 @@ IF %ERRORLEVEL% EQU 0 (
 
 IF EXIST config-azul.bat CALL config-azul.bat
 
-IF "%INSTALL_PATH%"=="" SET "INSTALL_PATH=C:\lb\Apps"
+IF "%INSTALL_PATH%"=="" (
+  ECHO>&2.Missing INSTALL_PATH for deployments
+  CALL :seterrorlevel 2
+  GOTO :exit
+)
 IF NOT EXIST "%INSTALL_PATH%\." MD "%INSTALL_PATH%"
 
 ECHO ON
 
 "%PWSH%" -NoProfile -Command^
- "& '.\%~dpn0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jre8 -JRE -Arch x86 -OpenFX"
+ "& '%~dpn0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jre8 -JRE -Arch x86 -OpenFX"
 @IF ERRORLEVEL 1 GOTO :exit
 
 "%PWSH%" -NoProfile -Command^
- "& '.\%~dpn0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jdk8,jdk11,jdk17 -JDK -Arch amd64 -OpenFX"
+ "& '%~dpn0.ps1' -InstallPath "%INSTALL_PATH%" -FromPath jdk8,jdk11,jdk17 -JDK -Arch amd64 -OpenFX"
 @IF ERRORLEVEL 1 GOTO :exit
 
 :exit
@@ -36,3 +40,6 @@ ECHO ON
 @ECHO %cmdcmdline% | FIND /i "%~0" >NUL
 @IF NOT ERRORLEVEL 1 PAUSE
 @ENDLOCAL&EXIT /B %ERR%
+
+:seterrorlevel
+EXIT /B %~1

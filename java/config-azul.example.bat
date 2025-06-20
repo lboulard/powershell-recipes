@@ -1,0 +1,1 @@
+SET "INSTALL_PATH=%LBHOME%\Apps"
