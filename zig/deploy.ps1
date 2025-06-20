@@ -5,7 +5,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$versionRegex = "^zig-windows-x86_64-(?<version>(?<branch>\d+\.\d+)(?:\.\d+){0,2})(?<dev>-dev.+\+[0-9a-f]+)?.*\.zip$"
+$versionRegex = "^zig-(?:windows-x86_64|x86_64-windows)-(?<version>(?<branch>\d+\.\d+)(?:\.\d+){0,2})(?<dev>-dev.+\+[0-9a-f]+)?.*\.zip$"
 
 $folderRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.(?<devNumber>\d+))?$"
 $lbPrograms = $Env:LBPROGRAMS

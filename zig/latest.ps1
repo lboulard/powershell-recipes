@@ -84,9 +84,10 @@ function GetForAllArchs ([string]$member) {
     $field = $releases | Get-Member -MemberType NoteProperty -Name $note
     if ($field) {
       $global:shortcuts += [pscustomobject]@{
-        Branch = $branch
-        Name   = $note
-        URL    = $releases | Select-Object -ExpandProperty $note
+        Version = $version
+        Branch  = $branch
+        Name    = $note
+        URL     = $releases | Select-Object -ExpandProperty $note
       }
     }
   }
@@ -96,7 +97,7 @@ function GetForAllArchs ([string]$member) {
     if ($field) {
       $release = $releases | Select-Object -ExpandProperty $arch
       [pscustomobject]@{
-        version = $version
+        Version = $version
         Arch    = $arch
         Branch  = $branch
         href    = $release.Tarball
@@ -121,9 +122,9 @@ $files = $maintained | ForEach-Object {
   if ($name -eq "/") {
     throw "${_.href} does not contains a filename"
   }
-  $branch = $release.Branch
+  $version = $release.Version
   [pscustomobject]@{
-    href   = "$dl#${branch}/${name}"
+    href   = "$dl#${version}/${name}"
     Sha256 = $release.Sha256
     Size   = $release.Size
   }
@@ -256,9 +257,10 @@ $files | ForEach-Object {
 }
 
 # Create all URL shortcuts for documentations and release notes
+Write-Host $shortcuts
 $shortcuts | ForEach-Object {
   $shortcut = $_
-  $filename = "$($shortcut.Branch)/$($shortcut.Name).url"
+  $filename = "$($shortcut.Version)/$($shortcut.Name).url"
   if (Test-Path $filename) {
     $current = [IO.File]::ReadAllLines($filename)
   }
