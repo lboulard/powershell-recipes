@@ -69,6 +69,7 @@ if ($false) {
 # Create URL file to downloads
 
 $destDir = (Get-RecipesConfig).ResolveLocation('irfanview', $destDir)
+New-Item -Path $destDir -ItemType Directory -Force | Out-Null
 
 @(
   "iview${cleanVersion}_x64_setup.exe"
