@@ -1,4 +1,6 @@
 $ErrorActionPreference = "Stop"
+# $VerbosePreference = "Continue"
+# $DebugPreference = "Continue"
 
 # for Linux, use "linux-glibc", "linux-musl" or "linux-uclibc"
 # for MacOS, use "macos"
@@ -74,7 +76,7 @@ function AzulMetadata {
   }
 }
 
-New-Variable AzulArch -Option Constant -Value @{
+New-Variable AzulArch -Option Constant -ErrorAction Continue -Value @{
   x86_32  = "x86"
   x86_64  = "amd64"
   arm_32  = "aarch32"
