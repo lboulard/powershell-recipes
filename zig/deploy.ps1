@@ -7,7 +7,7 @@ $ErrorActionPreference = "Stop"
 
 $versionRegex = "^zig-(?:windows-x86_64|x86_64-windows)-(?<version>(?<branch>\d+\.\d+)(?:\.\d+){0,2})(?<dev>-dev.+\+[0-9a-f]+)?.*\.zip$"
 
-$folderRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.(?<devNumber>\d+))?$"
+$folderRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.(?<devNumber>\d+))?"
 $lbPrograms = $Env:LBPROGRAMS
 $prefix = Join-Path $lbPrograms "local"
 $root = Get-Location
@@ -94,35 +94,24 @@ if ($false) {
 $files = $folders | Get-ChildItem -File | Where-Object {
   $_.Name -match $versionRegex
 }
-$selected = $files | Sort-Object -Unique -Descending -Property {
+$toDeploy = $files | Group-Object -Property {
   if ($_.Name -match $versionRegex) {
-    $version = $Matches.version
-    $version += if ($Matches.dev) { "" } else { ".0" }
-    $version -as [version]
+    $Matches.branch
   }
-}, { $_ } | ForEach-Object -Begin { $seen = @{} } {
-  # for filter to work, "0.x" is before "0.x-dev", see Sort-Object just before
-  $version = $_.Directory.Name
-  if ($version -match '-dev') {
-    $version = $version -replace '-dev', ''
-    if ($seen.ContainsKey($version)) {
-      return $null
+} | Sort-Object -Unique -Descending -Property {
+  $_.Name -as [version]
+} | Select-Object -First $(if ($DevOnly) { 1 } else { 3 }) | ForEach-Object {
+  $_.Group | Sort-Object -Descending -Unique -Property {
+    if ($_.Name -match $versionRegex) {
+      $Matches.version -as [version]
     }
-  }
-  if (-not $seen.ContainsKey($version)) {
-    $seen.Add($version, $true)
-  }
-  $_
+  } | Select-Object -First 1
 }
 
-if (-not $selected) {
+if (-not $toDeploy) {
   [Console]::Error.WriteLine(($files | Select-Object -ExpandProperty FullName) -join "`n")
   throw "no files to install"
 }
-
-
-$count = if ($selected[0].Name -match '-dev') { 1 } else { 3 }
-$toDeploy = $selected | Select-Object -First $count
 
 # $toDeploy | Select-Object FullName
 
@@ -143,11 +132,7 @@ Write-Host "Will install:" (
 ) -ForegroundColor Yellow
 Write-Host
 
-function Create-Symboliclink {
-  param(
-    [string]$Path,
-    [string]$Value
-  )
+function createSymboliclink($Path, $Value) {
 
   $upToDate = $False
   if (Test-Path $Path) {
@@ -166,7 +151,7 @@ function Create-Symboliclink {
   if (-not $upToDate) {
     New-Item -Path $Path -ItemType symboliclink -Value $Value | Out-Null
   } else {
-    Write-Host " (no change)" -ForegroundColor DarkYellow -NoNewLine
+    Write-Host " (no change)" -ForegroundColor DarkYellow -NoNewline
   }
   Write-Host
 }
@@ -212,15 +197,15 @@ try {
     $zigExe = Join-Path $dest 'zig.exe'
 
     $symlink = Join-Path $bin "zig-$branch.exe"
-    Create-SymbolicLink -Path $symlink -Value $zigExe
+    createSymbolicLink $symlink $zigExe
 
     if ($isDev) {
       $symlink = Join-Path $bin "zig-dev.exe"
-      Create-SymbolicLink -Path $symlink -Value $zigExe
+      createSymbolicLink -Path $symlink -Value $zigExe
     } elseif (-not $mainSymlink) {
       # only first non-dev version is main zig.exe in symlink
       $mainSymlink = Join-Path $bin "zig.exe"
-      Create-SymbolicLink -Path $mainSymlink -Value $zigExe
+      createSymbolicLink $mainSymlink $zigExe
     }
   }
 } finally {
