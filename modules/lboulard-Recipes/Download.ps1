@@ -81,7 +81,22 @@ function script:Invoke-Download ($url, $to, $headers, $canShowProgress) {
   $total = $wres.ContentLength
   $lastModifiedHeader = $wres.Headers.Get("Last-Modified")
   if ($lastModifiedHeader) {
-    $lastModifiedDate = [System.DateTime]::Parse($lastModifiedHeader)
+    try {
+      $lastModifiedDate = $wres.LastModified
+      if ($null -ne $lastModifiedDate) {
+        Write-Debug "Last-Modified: $lastModifiedDate"
+      } else {
+        if ($lastModifiedHeader -match "\d+") {
+          $epoch = [Int64]::Parse($lastModifiedHeader)
+          $lastModifiedDate = [System.DateTime]::UnixEpoch.AddSeconds($epoch)
+          Write-Warning "** Last-Modified recovered from '$lastModifiedHeader' to $lastModifiedDate"
+        } else {
+          Write-Warning "ignoring Last-Modified: $lastModifiedHeader"
+        }
+      }
+    } catch [System.Net.WebException] {
+      Write-Error "Last-Modified header", $_
+    }
   }
 
   if ($canShowProgress -and ($total -gt 0)) {
