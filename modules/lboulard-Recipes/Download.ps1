@@ -1,15 +1,17 @@
-function canProgress {
+function script:canProgress {
   [System.Console]::IsOutputRedirected -eq $false -and
   $Host.Name -ne 'Windows PowerShell ISE Host'
 }
 
-function Start-Download ($url, $to, $headers) {
-  $progress = canProgress
+function script:Start-Download ($url, $to, $headers) {
+  Write-Verbose "Start-Download: url=$url, to=$to, headers=$headers"
+  $canProgress = canProgress
 
   try {
     $url = handle_special_urls $url
-    Invoke-Download $url $to $header $progress
-  } catch {
+    Invoke-Download $url $to $headers.Clone() $canProgress
+  } catch [System.Net.WebException] {
+    Write-Debug "$_"
     $e = $_.exception
     if ($e.Response.StatusCode -eq 'Unauthorized') {
       warn 'Token might be misconfigured.'
@@ -20,7 +22,8 @@ function Start-Download ($url, $to, $headers) {
 }
 
 # download with file size and progress indicator
-function Invoke-Download ($url, $to, $headers, $progress) {
+function script:Invoke-Download ($url, $to, $headers, $canShowProgress) {
+  Write-Verbose "Invkoke-Download: url=$url, to=$to, headers=$headers, canShowProgress=$canShowProgress"
 
   $reqUrl = ($url -split '#')[0]
   $wreq = [Net.WebRequest]::Create($reqUrl)
@@ -81,8 +84,8 @@ function Invoke-Download ($url, $to, $headers, $progress) {
     $lastModifiedDate = [System.DateTime]::Parse($lastModifiedHeader)
   }
 
-  if ($progress -and ($total -gt 0)) {
-    [console]::CursorVisible = $false
+  if ($canShowProgress -and ($total -gt 0)) {
+    [System.Console]::CursorVisible = $false
     function Trace-DownloadProgress ($read) {
       Write-DownloadProgress $read $total $url
     }
@@ -113,7 +116,7 @@ function Invoke-Download ($url, $to, $headers, $progress) {
     Trace-DownloadProgress $totalRead
 
   } finally {
-    if ($progress) {
+    if ($canShowProgress) {
       [System.Console]::CursorVisible = $true
       Write-Host
     }
@@ -216,7 +219,7 @@ function Get-Url() {
     }
 
     if (-not $Headers.Contains('Accept')) {
-      $headers['Accept'] = 'application/octet-stream'
+      $Headers['Accept'] = 'application/octet-stream'
     }
     $hasUserAgent = $Headers.Contains('User-Agent')
     $config = Get-RecipesConfig
@@ -251,7 +254,8 @@ function Get-Url() {
           Start-Download $src $tmpFile $Headers
           Move-Item -Path $tmpFile -Destination $dest
         } catch {
-          Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
+          Write-Error "** Error: $($_.Exception.Message), line $($_.Exception.InvocationInfo.ScriptLineNumber)"
+          Write-Warning "Stopping processing next URL"
           break
         }
       }
