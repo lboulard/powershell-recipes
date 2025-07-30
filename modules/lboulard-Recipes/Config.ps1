@@ -246,7 +246,7 @@ class Config {
       }
       Write-Debug "PROXY SYSTEM"
       [Net.WebRequest]::DefaultWebProxy
-    }1
+    }
     return $webProxy
   }
 
