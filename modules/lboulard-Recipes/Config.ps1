@@ -126,7 +126,7 @@ function script:load_cfg($file) {
 $script:config_location = @(
   (Join-Path (Split-Path $PSScriptRoot -Parent) ".recipes.cfg")
   (Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) ".recipes.cfg")
-  @(if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "recipes/config" })
+  @(if ($env:LOCALAPPDATA) { Join-Path $env:LOCALAPPDATA "recipes/config.cfg" })
   @(if ($env:RECIPES_CONFIG) { $env:RECIPES_CONFIG })
 )
 
