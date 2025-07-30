@@ -294,8 +294,14 @@ class Config {
   }
 }
 
-function Get-RecipesConfig {
-  [Config]::New($script:config_location)
+$script:recipesConfig = $null
+
+function Get-RecipesConfig([switch]$Force) {
+  if ($Force -or ($null -eq $script:recipesConfig)) {
+    Write-Debug "Read recipes configuration files"
+    $script:recipesConfig = [Config]::New($script:config_location)
+  }
+  $script:recipesConfig
 }
 function Get-RecipesConfigList {
   [Config]::New($script:config_location).Configs
