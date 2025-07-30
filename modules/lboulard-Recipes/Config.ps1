@@ -209,7 +209,6 @@ class Config {
     $section = $section + "."
     $name = "." + $name
     foreach ($item in $this.Configs) {
-      Write-Debug "config line: $item"
       $key, $value = $item.Split('=', 2)
       if ($key.StartsWith($section) -and $key.EndsWith($name)) {
         $length = $key.Length - $section.Length - $name.Length
@@ -225,6 +224,7 @@ class Config {
     $value = $null
     foreach ($item in $this.Locate($section, $name)) {
       $subsection, $value = $item
+      Write-Debug "config line: $section[$subsection].$name=$value"
       if (!$subsection) {
         $value = $value
       }
@@ -266,6 +266,7 @@ class Config {
     $useragent = $null
     foreach ($item in $this.Locate("http", "user-agent")) {
       $subsection, $value = $item
+      Write-Debug "config line: http[$subsection].user-agent=$value"
       if ($url.StartsWith($subsection)) {
         $useragent = $value
       }
@@ -282,6 +283,7 @@ class Config {
     $location = $null
     foreach ($item in $this.Locate("location", "fetch")) {
       $subsection, $value = $item
+      Write-Debug "config line: location[$subsection].fetch=$value"
       if (!$subsection -or ($Project -eq $subsection)) {
         $location = $value
       }
