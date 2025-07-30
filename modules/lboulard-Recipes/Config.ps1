@@ -220,46 +220,31 @@ class Config {
     return $items.ToArray()
   }
 
-  [string] GetString([string]$section, [string]$name) {
-    $value = $null
+  [bool] Exists([string]$section, [string]$name) {
     foreach ($item in $this.Locate($section, $name)) {
       $subsection, $value = $item
       Write-Debug "config line: $section[$subsection].$name=$value"
       if (!$subsection) {
-        $value = $value
+        return $true
       }
     }
-    return $value
+    return $false
+  }
+
+  [string] GetString([string]$section, [string]$name) {
+    $result = [NullString]::Value
+    foreach ($item in $this.Locate($section, $name)) {
+      $subsection, $value = $item
+      Write-Debug "config line: $section[$subsection].$name=$value"
+      if (!$subsection) {
+        $result = $value
+      }
+    }
+    return $result
   }
 
   [System.Net.IWebProxy] GetWebProxy() {
-    $http_proxy = $this.GetString("http", "proxy")
-    $webProxy = if ($http_proxy -in @("none", "", "no" )) {
-      Write-Debug "NO PROXY"
-      New-Object Net.WebProxy
-    } elseif ($http_proxy -match "^https?://") {
-      $credentials, $address = $http_proxy -split '(?<!\\)@'
-      if (!$address) {
-        $address, $credentials = $credentials, $null # no credentials supplied
-      }
-
-      Write-Debug "PROXY $http_proxy"
-      $webProxy = New-Object Net.WebProxy $http_proxy, $true
-      if ($credentials -eq 'currentuser') {
-        $webProxy.Credentials = [net.credentialcache]::defaultcredentials
-      } elseif ($credentials) {
-        $username, $password = $credentials -split '(?<!\\):' | ForEach-Object { $_ -replace '\\([@:])', '$1' }
-        $webProxy.Credentials = New-Object Net.NetworkCredential($username, $password)
-      }
-      return $webProxy
-    } else {
-      if ($http_proxy) {
-        Write-Warning "BAD PROXY '$http_proxy', using system proxy"
-      }
-      Write-Debug "PROXY SYSTEM"
-      [Net.WebRequest]::DefaultWebProxy
-    }
-    return $webProxy
+    return [Net.WebRequest]::DefaultWebProxy
   }
 
   [string] GetUserAgent([String]$url) {
@@ -324,3 +309,48 @@ function Get-RecipesConfigList {
 function Get-RecipesUserAgent {
   $script:UserAgents
 }
+
+function get_web_proxy([string]$http_proxy) {
+  $webProxy = if ($http_proxy -in @("none", "", "no" )) {
+    Write-Debug "NO PROXY"
+    $null
+  } elseif ($http_proxy -match "^https?://") {
+    $credentials, $http_proxy = $http_proxy -split '(?<!\\)@'
+    if (!$http_proxy) {
+      $http_proxy, $credentials = $credentials, $null # no credentials supplied
+    }
+
+    Write-Debug "PROXY $http_proxy"
+    $webProxy = New-Object Net.WebProxy($http_proxy, $true)
+    if ($credentials -eq 'currentuser') {
+      $webProxy.Credentials = [net.credentialcache]::defaultcredentials
+    } elseif ($credentials) {
+      $username, $password = $credentials -split '(?<!\\):' | ForEach-Object { $_ -replace '\\([@:])', '$1' }
+      $webProxy.Credentials = New-Object Net.NetworkCredential($username, $password)
+    }
+    return $webProxy
+  } else {
+    if ($http_proxy -and ($http_proxy -ne "system")) {
+      Write-Warning "BAD PROXY '$http_proxy', using system proxy"
+    }
+    Write-Debug "PROXY SYSTEM"
+    [Net.WebRequest]::GetSystemWebProxy()
+  }
+  return $webProxy
+}
+
+function setup_proxy() {
+  $http_proxy = if ($null -ne $Env:RECIPES_HTTP_PROXY) {
+    Write-Debug "Using RECIPES_HTTP_PROXY=`"$Env:RECIPES_HTTP_PROXY`""
+    $Env:RECIPES_HTTP_PROXY
+  } elseif ((Get-RecipesConfig).Exists("http", "proxy")) {
+       (Get-RecipesConfig).GetString("http", "proxy")
+  } else {
+    "system"
+  }
+
+  $webProxy = get_web_proxy $http_proxy
+  [Net.WebRequest]::DefaultWebProxy = $webProxy
+}
+
+setup_proxy

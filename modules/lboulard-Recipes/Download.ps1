@@ -3,13 +3,13 @@ function script:canProgress {
   $Host.Name -ne 'Windows PowerShell ISE Host'
 }
 
-function script:Start-Download ($url, $to, $headers, $webProxy) {
+function script:Start-Download ($url, $to, $headers) {
   Write-Verbose "Start-Download: url=$url, to=$to, headers=$headers"
   $canProgress = canProgress
 
   try {
     $url = handle_special_urls $url
-    Invoke-Download $url $to $headers.Clone() $canProgress $webProxy
+    Invoke-Download $url $to $headers.Clone() $canProgress
   } catch [System.Net.WebException] {
     Write-Debug "$_"
     $e = $_.exception
@@ -22,15 +22,12 @@ function script:Start-Download ($url, $to, $headers, $webProxy) {
 }
 
 # download with file size and progress indicator
-function script:Invoke-Download ($url, $to, $headers, $canShowProgress, $webProxy) {
+function script:Invoke-Download ($url, $to, $headers, $canShowProgress) {
   Write-Verbose "Invkoke-Download: url=$url, to=$to, headers=$headers, canShowProgress=$canShowProgress"
 
   $reqUrl = ($url -split '#')[0]
   $wreq = [Net.WebRequest]::Create($reqUrl)
 
-  if ($webProxy) {
-    $wreq.Proxy = $webProxy
-  }
 
   $wreq.UserAgent = Get-UserAgent
   if (-not ($url -match 'sourceforge\.net' -or $url -match 'portableapps\.com')) {
@@ -243,8 +240,6 @@ function Get-Url() {
     $hasUserAgent = $Headers.Contains('User-Agent')
     $config = Get-RecipesConfig
 
-    $webProxy = $config.GetWebProxy()
-
     $UrlList | ForEach-Object {
       $url = [System.Uri]($_)
       $src = $url.AbsoluteUri
@@ -272,7 +267,7 @@ function Get-Url() {
             $folders.Add($parent, $True)
           }
           $tmpFile = "$dest.tmp"
-          Start-Download $src $tmpFile $Headers $webProxy
+          Start-Download $src $tmpFile $Headers
           Move-Item -Path $tmpFile -Destination $dest
         } catch {
           Write-Error "** Error: $($_.Exception.Message), line $($_.Exception.InvocationInfo.ScriptLineNumber)"

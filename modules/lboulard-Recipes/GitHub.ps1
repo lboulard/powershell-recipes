@@ -134,19 +134,6 @@ function Invoke-GitHubApi() {
     "UseBasicParsing" = $true
   }
 
-  $uri = [Uri]$Url
-  $proxy = $webProxy.GetProxy($uri)
-  if ($proxy -eq $uri) {
-    $requestArgs.Add('NoProxy', $true)
-  } else {
-    $requestArgs.Add('Proxy', $proxy)
-    if ($webProxy.UseDefaultCredentials) {
-      $requestArgs.Add('UseDefaultCredentials', $true)
-    } elseif ($webProxy.Credentials) {
-      $requestArgs.Add('ProxyCredential', $webProxy.Credentials)
-    }
-  }
-
   # maximum 5 tentatives
   while ($retryCount -lt $maxTry) {
 
