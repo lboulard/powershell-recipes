@@ -105,7 +105,8 @@ function Invoke-GitHubApi() {
   param(
     [string]$Url,
     [string]$Token,
-    [hashtable]$Headers = $null
+    [hashtable]$Headers = $null,
+    [System.Net.IWebProxy]$WebProxy = $null
   )
 
   if ($Headers -eq $null) {
@@ -126,6 +127,26 @@ function Invoke-GitHubApi() {
   $retryCount = 0
   $maxTry = 5
 
+  $requestArgs = @{
+    "Uri"             = $Url
+    "Headers"         = $Headers
+    "UserAgent"       = (Get-RecipesConfig).GetUserAgent($Url)
+    "UseBasicParsing" = $true
+  }
+
+  $uri = [Uri]$Url
+  $proxy = $webProxy.GetProxy($uri)
+  if ($proxy -eq $uri) {
+    $requestArgs.Add('NoProxy', $true)
+  } else {
+    $requestArgs.Add('Proxy', $proxy)
+    if ($webProxy.UseDefaultCredentials) {
+      $requestArgs.Add('UseDefaultCredentials', $true)
+    } elseif ($webProxy.Credentials) {
+      $requestArgs.Add('ProxyCredential', $webProxy.Credentials)
+    }
+  }
+
   # maximum 5 tentatives
   while ($retryCount -lt $maxTry) {
 
@@ -133,13 +154,13 @@ function Invoke-GitHubApi() {
     Write-Verbose "GitHub API: ${Url}"
     if ($psVersion.Major -eq 5) {
       $response = try {
-     (Invoke-WebRequest  -Uri $Url -Headers $Headers -UseBasicParsing -ErrorAction Stop).BaseResponse
+     (Invoke-WebRequest @requestArgs -ErrorAction Stop).BaseResponse
       } catch [System.Net.WebException] {
         Write-Verbose "An exception was caught: $($_.Exception.Message)"
         $_.Exception.Response
       }
     } else {
-      $response = Invoke-WebRequest  -Uri $Url -Headers $Headers -UseBasicParsing -ErrorAction SilentlyContinue -SkipHttpErrorCheck
+      $response = Invoke-WebRequest @requestArgs -ErrorAction SilentlyContinue -SkipHttpErrorCheck
     }
     $statusCode = [int]$response.StatusCode
 
@@ -203,6 +224,8 @@ function Get-GitHubReleases() {
   }
 
   process {
+    $config = Get-RecipesConfig
+
     # initial URL to start finding releases.
     # Query "per_page" for pagination is kept in link header response
     $url = "https://api.github.com/repos/$Project/releases?per_page=25"
@@ -211,7 +234,7 @@ function Get-GitHubReleases() {
     while ($url -and ($pageNumber -lt $MaxPages)) {
       $pageNumber += 1
       Write-Verbose "GitHub releases page ${pageNumber}/${maxPages}"
-      $result = Invoke-GitHubApi -Url $url -Token $Token
+      $result = Invoke-GitHubApi -Url $url -Token $Token -WebProxy $config.GetWebProxy()
       $link = Get-GitHubLinks ($result.Headers['Link'])
       $next = if ($link) { $link.next }
 
@@ -352,7 +375,9 @@ function Find-GitHubAssets() {
     [ScriptBlock]$NameMangle = {}
   )
 
-  $json = Invoke-GitHubApi -Url "https://api.github.com/repos/$Project/releases/tags/$Tag" -Token $Token
+  $config = Get-RecipesConfig
+
+  $json = Invoke-GitHubApi -Url "https://api.github.com/repos/$Project/releases/tags/$Tag" -Token $Token -WebProxy $config.GetWebProxy()
   $release = $json.Content | ConvertFrom-Json
   if ($release) {
     $release.assets | ForEach-Object {

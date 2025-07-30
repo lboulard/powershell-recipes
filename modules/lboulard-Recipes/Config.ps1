@@ -203,11 +203,13 @@ class Config {
     }
   }
 
+  # Return an array of tuples (subsection, value)
   hidden [string[][]] Locate([string]$section, [string]$name) {
     $items = New-Object System.Collections.ArrayList
     $section = $section + "."
     $name = "." + $name
     foreach ($item in $this.Configs) {
+      Write-Debug "config line: $item"
       $key, $value = $item.Split('=', 2)
       if ($key.StartsWith($section) -and $key.EndsWith($name)) {
         $length = $key.Length - $section.Length - $name.Length
@@ -217,6 +219,35 @@ class Config {
       }
     }
     return $items.ToArray()
+  }
+
+  [string] GetString([string]$section, [string]$name) {
+    $value = $null
+    foreach ($item in $this.Locate($section, $name)) {
+      $subsection, $value = $item
+      if (!$subsection) {
+        $value = $value
+      }
+    }
+    return $value
+  }
+
+  [System.Net.IWebProxy] GetWebProxy() {
+    $http_proxy = $this.GetString("http", "proxy")
+    $webProxy = if ($http_proxy -in @("none", "", "no" )) {
+      Write-Debug "NO PROXY"
+      New-Object Net.WebProxy
+    } elseif ($http_proxy -match "^https?://") {
+      Write-Debug "PROXY $http_proxy"
+      New-Object Net.WebProxy $http_proxy, $true
+    } else {
+      if ($http_proxy) {
+        Write-Warning "BAD PROXY '$http_proxy', using system proxy"
+      }
+      Write-Debug "PROXY SYSTEM"
+      [Net.WebRequest]::DefaultWebProxy
+    }1
+    return $webProxy
   }
 
   [string] GetUserAgent([String]$url) {

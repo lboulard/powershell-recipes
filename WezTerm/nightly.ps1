@@ -115,10 +115,14 @@ function last_modifed_time($dest) {
 }
 
 # download with file size and progress indicator
-function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
+function Invoke-Download ($url, $to, $headers, $progress, $outdir, $webProxy) {
 
   $reqUrl = ($url -split '#')[0]
   $wreq = [Net.WebRequest]::Create($reqUrl)
+
+  if ($webProxy) {
+    $wreq.Proxy = $webProxy
+  }
 
   if (-not $to) {
     $reqName = ($url -split '#')[1]
@@ -364,8 +368,10 @@ if (canProgress) {
   $progressFunc = $function:progress
 }
 
-$location = (Get-RecipesConfig).GetFetchLocation("wezterm")
+$config = Get-RecipesConfig
+$location = $config.GetFetchLocation("wezterm")
+$webProxy = $config.GetWebProxy()
 
 foreach ($url in $files) {
-  Invoke-Download $url $null $null $progressFunc $location
+  Invoke-Download $url $null $null $progressFunc $location $webProxy
 }
