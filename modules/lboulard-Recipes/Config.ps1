@@ -238,8 +238,20 @@ class Config {
       Write-Debug "NO PROXY"
       New-Object Net.WebProxy
     } elseif ($http_proxy -match "^https?://") {
+      $credentials, $address = $http_proxy -split '(?<!\\)@'
+      if (!$address) {
+        $address, $credentials = $credentials, $null # no credentials supplied
+      }
+
       Write-Debug "PROXY $http_proxy"
-      New-Object Net.WebProxy $http_proxy, $true
+      $webProxy = New-Object Net.WebProxy $http_proxy, $true
+      if ($credentials -eq 'currentuser') {
+        $webProxy.Credentials = [net.credentialcache]::defaultcredentials
+      } elseif ($credentials) {
+        $username, $password = $credentials -split '(?<!\\):' | ForEach-Object { $_ -replace '\\([@:])', '$1' }
+        $webProxy.Credentials = New-Object Net.NetworkCredential($username, $password)
+      }
+      return $webProxy
     } else {
       if ($http_proxy) {
         Write-Warning "BAD PROXY '$http_proxy', using system proxy"
