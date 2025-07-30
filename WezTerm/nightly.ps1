@@ -107,7 +107,7 @@ function file_up_to_date($dest, $size, $lastModified) {
 }
 
 function last_modifed_time($dest) {
-  $fileInfo = Get-Item $dest
+  $fileInfo = [System.IO.FileInfo]::new($dest)
   if ($fileInfo.Exists) {
     return $fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss \G\M\T")
   }
@@ -234,21 +234,19 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
     }
   }
 
-  $fullPath = Resolve-Path $to
   Write-Host " # ${to}"
   if ($lastModifiedDate) {
     Write-Host " # Last modified time: $lastModifiedDate"
   }
   
-  $parent = Split-Path -Parent -Path $fullPath
-  if ($parent) {
-    if (-not (Test-Path $parent -PathType Container)) {
-      New-Item -Path $parent -ItemType Container | Out-Null
+  if ($outdir) {
+    if (-not (Test-Path $outdir -PathType Container)) {
+      New-Item -Path $outdir -ItemType Container | Out-Null
     }
   }
 
   if ($total -gt 0) {
-    if (file_up_to_date $fullPath $total $lastModifiedDate) {
+    if (file_up_to_date $to $total $lastModifiedDate) {
       $wres.GetResponseStream().Close()
       $wres.Close()
       return
@@ -258,7 +256,7 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   try {
 
     $s = $wres.GetResponseStream()
-    $fs = [IO.File]::OpenWrite($fullPath)
+    $fs = [IO.File]::OpenWrite($to)
     $buffer = New-Object byte[] 4096
     $totalRead = 0
 
@@ -289,7 +287,7 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
 
       if ($lastModifiedDate) {
         try {
-          [System.IO.File]::SetLastWriteTime($fullPath, $lastModifiedDate)
+          [System.IO.File]::SetLastWriteTime($to, $lastModifiedDate)
         } catch {
           Write-Error "Date: '$lastModified'"
           Write-Error "$($_.Exception.Message)"
