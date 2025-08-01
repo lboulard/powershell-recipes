@@ -243,10 +243,6 @@ class Config {
     return $result
   }
 
-  [System.Net.IWebProxy] GetWebProxy() {
-    return [Net.WebRequest]::DefaultWebProxy
-  }
-
   [string] GetUserAgent([String]$url) {
     $useragent = $null
     foreach ($item in $this.Locate("http", "user-agent")) {

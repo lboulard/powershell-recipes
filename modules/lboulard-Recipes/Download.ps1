@@ -75,7 +75,7 @@ function script:Invoke-Download ($url, $to, $headers, $canShowProgress) {
       $newUrl = "$newUrl#/$postfix"
     }
 
-    Invoke-Download $newUrl $to $cookies $progress $webProxy
+    Invoke-Download $newUrl $to $cookies $progress
     return
   }
 

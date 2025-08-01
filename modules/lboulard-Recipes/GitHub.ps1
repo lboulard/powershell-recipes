@@ -105,8 +105,7 @@ function Invoke-GitHubApi() {
   param(
     [string]$Url,
     [string]$Token,
-    [hashtable]$Headers = $null,
-    [System.Net.IWebProxy]$WebProxy = $null
+    [hashtable]$Headers = $null
   )
 
   if ($Headers -eq $null) {
@@ -221,7 +220,7 @@ function Get-GitHubReleases() {
     while ($url -and ($pageNumber -lt $MaxPages)) {
       $pageNumber += 1
       Write-Verbose "GitHub releases page ${pageNumber}/${maxPages}"
-      $result = Invoke-GitHubApi -Url $url -Token $Token -WebProxy $config.GetWebProxy()
+      $result = Invoke-GitHubApi -Url $url -Token $Token
       $link = Get-GitHubLinks ($result.Headers['Link'])
       $next = if ($link) { $link.next }
 
@@ -364,7 +363,7 @@ function Find-GitHubAssets() {
 
   $config = Get-RecipesConfig
 
-  $json = Invoke-GitHubApi -Url "https://api.github.com/repos/$Project/releases/tags/$Tag" -Token $Token -WebProxy $config.GetWebProxy()
+  $json = Invoke-GitHubApi -Url "https://api.github.com/repos/$Project/releases/tags/$Tag" -Token $Token
   $release = $json.Content | ConvertFrom-Json
   if ($release) {
     $release.assets | ForEach-Object {
