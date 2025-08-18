@@ -34,7 +34,7 @@ $packages = @{
   }
 
   # prefix with '#' to ignore entry
-  "#linux"  = @{
+  "linux"  = @{
     8  = @{
       OperatingSystems = @("linux-glibc")
       Architectures    = @("amd64", "aarch64")
