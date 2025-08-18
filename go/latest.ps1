@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 Import-Module lboulard-Recipes
 
 $IndexURL = "https://go.dev/dl/"
-$pathRegex = "/dl/(?<release>go(?<version>\d+\.\d+(\.\d+)+)\.(linux-amd64|linux-armv6l|windows-amd64).*)"
+$pathRegex = "/dl/(?<release>go(?<version>\d+\.\d+(\.\d+)+)\.(linux-amd64|windows-amd64).*)"
 
 try {
   $html = Invoke-HtmlRequest -Uri $IndexURL
