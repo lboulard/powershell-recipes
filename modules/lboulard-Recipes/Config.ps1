@@ -307,7 +307,7 @@ function Get-RecipesUserAgent {
 }
 
 function get_web_proxy([string]$http_proxy) {
-  $webProxy = if ($http_proxy -in @("none", "", "no" )) {
+  $webProxy = if ($http_proxy -in @("none", "", "no", "off" )) {
     Write-Debug "NO PROXY"
     $null
   } elseif ($http_proxy -match "^https?://") {
