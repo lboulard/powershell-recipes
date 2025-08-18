@@ -39,6 +39,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "applysettings"; Description: "Apply default settings from installer"; GroupDescription: "Visual Studio Code settings:"; Flags: unchecked
 Name: "dosbatch"; Description: "Create code.cmd for CMD.EXE"; GroupDescription: "Command line usage:"; Flags: unchecked
 
+[Dirs]
+Name: "{userappdata}\Code"; Flags: uninsneveruninstall
+
 [Files]
 Source: "files-{#VSCodeVersion}\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion allowunsafefiles createallsubdirs
 Source: "{#SourcePath}\supplies\jq.exe"; DestDir: "{tmp}"; Tasks: applysettings
@@ -225,19 +228,21 @@ end;
 procedure ApplySettings();
 var
   InstallerSettings: String;
+  SettingsPath: String;
 begin
   Log('start: apply VSCode settings');
   InstallerSettings := ExpandConstant('{tmp}\settings.json');
   if not FileExists(VSCodeSettingsPath) then
   begin
     Log(Format('Copy %s to %s', [InstallerSettings, VSCodeSettingsPath]));
-    if CreateDir(ExtractFilePath(VSCodeSettingsPath)) then
+    SettingsPath := RemoveBackslash(ExtractFileDir(VSCodeSettingsPath))
+    if DirExists(SettingsPath) or CreateDir(SettingsPath) then
     begin
       if not CopyFile(InstallerSettings, VSCodeSettingsPath, True) then
         MsgBox(VSCodeSettingsPath + ': cannot create', mbError, MB_OK);
     end
     else
-      MsgBox(ExtractFilePath(VSCodeSettingsPath) + ': cannot create', mbError, MB_OK);
+      MsgBox(SettingsPath + ': cannot create', mbError, MB_OK);
   end
   else
     MergeSettings(VSCodeSettingsPath, InstallerSettings);
