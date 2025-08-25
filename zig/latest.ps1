@@ -188,6 +188,8 @@ $location = (Get-RecipesConfig).GetFetchLocation('zig')
 
 $folders = @{}  # remember created folder to create only once
 
+# TODO use https://ziglang.org/download/community-mirrors/
+
 $files | ForEach-Object {
   $parts = $_.href.Split('#', 2)
   $src = $parts[0]
@@ -253,6 +255,11 @@ $files | ForEach-Object {
       Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)" -TargetObject $_
       break
     }
+  }
+
+  if (-not (Test-Path "$dest.minisig")) {
+    Write-Host "# $dest.minisig"
+    $result = Invoke-WebRequest -Uri "$src.minisig" -OutFile "$dest.minisig" -UseBasicParsing -PassThru -ErrorAction Continue
   }
 }
 
