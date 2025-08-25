@@ -60,11 +60,10 @@ $html.Links | ForEach-Object { $_.pathname } | ForEach-Object {
 }, { $_ } |  ForEach-Object { $_.target } | ForEach-Object {
   (New-Object System.Uri -ArgumentList $url, $_).AbsoluteUri
 } | ForEach-Object {
-  Write-Verbose "Reading $_"
-  $links += (Get-Html -Uri $_).links | ForEach-Object {
-    $_.pathname
-  } | Where-Object {
+  $releaseLinks = (Get-Html -Uri $_).Links | ForEach-Object { $_.pathname }
+  $links += $releaseLinks | Where-Object {
     # .exe are the default since 3.4, .msi before
+    $_ | Write-Verbose
     $_ -match ("^python-" + $versionPattern + "(-amd64\.exe|.amd64.msi)$")
   }
 }
