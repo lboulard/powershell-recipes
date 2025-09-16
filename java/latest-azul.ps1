@@ -31,6 +31,12 @@ $packages = @{
       PackageTypes     = @("jdk")
       ArchiveTypes     = @("msi", "zip")
     }
+    25 = @{
+      OperatingSystems = @("windows")
+      Architectures    = @("amd64")
+      PackageTypes     = @("jdk")
+      ArchiveTypes     = @("msi", "zip")
+    }
   }
 
   # prefix with '#' to ignore entry
