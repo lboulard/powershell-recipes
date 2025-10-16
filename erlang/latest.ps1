@@ -1,90 +1,89 @@
+# PowerShell 5 and 7
+# find Erlang installers using GitHub API only walking releases
+
 $ErrorActionPreference = "Stop"
 
 # https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
 # $VerbosePreference = "Continue"
 
+$branch = "27|28"
+
+# https://github.com/erlang/otp/releases/download/OTP-28.1/otp_win64_28.1.exe
+# https://github.com/erlang/otp/releases/download/OTP-28.1/otp_win64_28.1.zip
+# https://github.com/erlang/otp/releases/download/OTP-28.1/otp_doc_html_28.1.tar.gz
+# https://github.com/erlang/otp/releases/download/OTP-28.1/otp_doc_html_28.1.tar.gz.sigstore
+
+$tagPattern = "OTP-(?<version>(?:${branch})(?:\.\d+){0,3})$"
+$binaries = "otp_win64_(?:\d+(?:\.\d+){1,3})\.(exe|zip)"
+$docs = "otp_doc_html_(?:\d+(?:\.\d+){1,3})\.tar\.gz(?:\.sigstore)?"
+$wanted = "^(?:${binaries}|${docs})$"
+$project = "erlang/otp"
+
+
 Import-Module lboulard-Recipes
 
-$repo = "https://erlang.org/download/otp_versions_tree_app_vsns.html"
+# filenames are not enough to find release files
+# use GitHub API
 
-# https://github.com/erlang/otp/releases/download/OTP-27.0/otp_win64_27.0.exe
-
-$versionRegex = "/(?<release>otp_(win64|doc_html)_(?<version>\d+\.\d+(\.\d+){0,2})(\.\d+)*\.(exe|tar\.gz))$"
-
-try {
-  $html = Invoke-HtmlRequest -Uri $repo
-} catch {
-  Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
-  exit 1
-}
-$links = $html.Links
-
-$releases = $links.href | Where-Object {
-  try {
-    $_ -match $versionRegex
-  } catch {
-    $false
-  }
-} | Sort-Object -Unique -Descending -Property {
-  if ($_ -match $versionRegex) {
-    $Matches.version -as [version]
-  }
-}, { $_ }
-
-if (-not $releases) {
-  [Console]::Error.WriteLine(($links | Select-Object -ExpandProperty href) -join "`n")
-  throw "no releases found"
+$githubToken = Get-GitHubToken
+if (-not $githubToken) {
+  Write-Warning "GitHub token missing, failure or long delay can be expected"
 }
 
-# keep only two last branch that are maintained
+# parse all request until we find a release that match wanted files
 
-$url = [System.Uri]$repo
+$allBranch = ($branch -split "\|" | Sort-Object -Unique)
 
-# Get list of maintained version
+$found = @()
+$files = Find-GitHubReleaseFromAsset $project $tagPattern $wanted -Token $githubToken -ReleaseScript {
+  param($release)
+  Write-Host "Release tag: $($release.tag_name)"
+} -NameMangle {
+  # man$foundipulate $name, $version and $tag are accessible from tag pattern parsing
+  Write-Verbose "`$name='$name', `$version='$version'"
+  $version -match "^\d+\.\d+" | Out-Null
+  "erlang-$($matches[0])/${name}"
+} -Continue {
+  $r = if ($release.tag_name -match "\d+") { $matches[0] }
+  if ($r) {
+    $found = (@($found) + @($r) | Sort-Object -Unique)
+    (Compare-Object $found $allBranch).SideIndicator -ne $null
+  } else {
+    $true
+  }
+}
 
-# BEWARE: PS5 maintains order when grouping objects, PS6+ does not maintain order
-$maintained = $releases | ForEach-Object {
-  if ($_ -match $versionRegex) {
-    $version = [version]$Matches.version
-    [pscustomobject]@{
-      href     = $_
-      version  = $version
-      Major    = [int]$version.Major
-      Minor    = [int]$version.Minor
-      Build    = [math]::max(0, $version.Build)
-      Revision = [math]::max(0, $version.Revision)
-      Release  = $Matches.Release
+$files = $files | ForEach-Object {
+  $uri = [Uri]$_
+  $tag = $uri.Segments[-2].TrimEnd("/")
+  if ($tag -match $tagPattern) {
+    $version = $Matches.version
+    $tag -match "\d+" | Out-Null
+    [PSCustomObject]@{
+      Uri     = $uri
+      Main    = $Matches[0]
+      Version = $version
+      Tag     = $tag
     }
   }
-} | Group-Object {
-  $_.Major
-} | Sort-Object -Descending Name | Select-Object -First 2 | ForEach-Object {
-  $_.Group | Group-Object {
-    "{0:d4}.{1:d4}.{2:d4}.{3:d4}" -f $_.Major, $_.Minor, $_.Build, $_.Revision
-  } | Sort-Object -Descending Name | Select-Object -First 1
-} | Select-Object -ExpandProperty "Group"
-
-# all .exe have .zip
-$maintained = $maintained | ForEach-Object {
-  $_
-  if ($_.Release -match "\.exe$") {
-    $copy = $_.PSObject.Copy()
-    $copy.href = ($_.href -replace "\.exe$", ".zip")
-    $copy.Release = ($_.Release -replace "\.exe$", ".zip")
-    $copy
+} | Group-Object -Property Main | ForEach-Object {
+  $head = $_.Group | Group-Object -Property Version | Sort-Object -Property { [Version]$_.Name } -Descending | Select-Object -First 1
+  [PSCustomObject]@{
+    Main  = $_.Name
+    Group = $head.Group
   }
+} | ForEach-Object {
+  $_.Group.Uri.OriginalString
 }
 
-# Extract files to download (only latest maintained versions)
-# last version is downloaded in current folder
-# other version are downloaded in "$version" folder
-
-$files = $maintained | ForEach-Object {
-  $dl = New-Object System.Uri -ArgumentList $url, $_.href
-  $branch = "$($_.Major).$($_.Minor)"
-  "$dl#erlang-$branch/$($_.Release)"
+if (-not $files) {
+  Write-Error "no files found"
+  exit 1
 }
 
-if ($files) {
-  Get-Url $files -ProjectName erlang
+$headers = @{
+  'Accept'        = 'application/octet-stream'
+  'Authorization' = 'token ' + $githubToken
 }
+
+Get-Url $files -Headers $headers -ProjectName erlang
