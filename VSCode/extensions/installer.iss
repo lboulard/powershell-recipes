@@ -1,6 +1,6 @@
 
-#define IconsVersion "12.14.0"
-#define PowerShellVersion "2025.2.0"
+#define IconsVersion "12.15.0"
+#define PowerShellVersion "2025.4.0"
 
 #define VsixIcons "vscode-icons-" + IconsVersion + ".vsix"
 #define VsixPowerShell "powershell-" + PowerShellVersion + ".vsix"
