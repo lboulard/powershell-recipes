@@ -210,8 +210,6 @@ function Get-GitHubReleases() {
   }
 
   process {
-    $config = Get-RecipesConfig
-
     # initial URL to start finding releases.
     # Query "per_page" for pagination is kept in link header response
     $url = "https://api.github.com/repos/$Project/releases?per_page=25"
@@ -260,6 +258,8 @@ function Find-GitHubRelease() {
   )
 
   Get-GitHubReleases -Project $project -Token $Token -MaxPages $MaxPages -Continue {
+    param($release)
+
     if ($urls) {
       if ($Cont) {
         . $Cont
