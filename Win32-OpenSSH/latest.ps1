@@ -4,17 +4,17 @@ $ErrorActionPreference = "Stop"
 # $VerbosePreference = "Continue"
 
 # tag: v9.5.0.0p1-Beta / release: OpenSSH-Win64-v9.5.0.0.msi
-$tagPattern = "(?<revision>v(?<version>\d+\.\d+(\.\d+)+)).*"
+$tagPattern = "(?<version>\d+\.\d+(\.\d+)+).*"
 $project = "PowerShell/Win32-OpenSSH"
 
 Import-Module lboulard-Recipes
 
 Get-GitHubAssetsOfLatestRelease $project $tagPattern -ProjectName win32-openssh -FileSelection {
   # very ugly but does the job
-  $global:revision = $revision
+  $global:version = $version
   @(
-    "OpenSSH-Win64-$revision.msi"
-    "OpenSSH-Win64.zip#OpenSSH-Win64-$revision.zip"
+    "OpenSSH-Win64-v$version.msi"
+    "OpenSSH-Win64.zip#OpenSSH-Win64-v$version.zip"
   )
 }
 
@@ -24,8 +24,8 @@ if (!$error) {
     $formerLocation = Get-Location
     Set-Location $location
     @(
-    ("OpenSSH-Win64.msi", "OpenSSH-Win64-$revision.msi"),
-    ("OpenSSH-Win64.zip", "OpenSSH-Win64-$revision.zip")
+    ("OpenSSH-Win64.msi", "OpenSSH-Win64-v$version.msi"),
+    ("OpenSSH-Win64.zip", "OpenSSH-Win64-v$version.zip")
     ) | ForEach-Object {
       try {
         $link = $_[0]
