@@ -12,13 +12,15 @@ CD /D "%LOCATION%"
 @SET "BRANCH=%MAJOR%.%MINOR%"
 @SET "RBVER=Ruby%MAJOR%%MINOR%"
 
+@IF EXIST ".\Ruby-install-config.bat" @CALL ".\Ruby-install-config.bat"
+
 @SET "TASKS=nomodpath,noassocfiles"
-@IF NOT "%MYSELF:-default=%" == "%MYSELF%" (
+@IF "%BRANCH%" == "%DEFAULT_BRANCH%" (
+  @ECHO Using %BRANCH% for PATH and explorer files association
   @SET "TASKS=modpath,assocfiles"
 )
 @SET "TASKS=%TASKS%,noridkinstall,defaultutf8"
 
-@IF EXIST ".\Ruby-install-config.bat" @CALL ".\Ruby-install-config.bat"
 @IF "%DESTDIR%"=="" (
   @IF DEFINED LBHOME (
     @SET "DESTDIR=%LBHOME%"
