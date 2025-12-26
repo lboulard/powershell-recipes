@@ -85,6 +85,8 @@
 	fetch = D:/Installs/dev/ruby
 [location "ruby3.4"]
 	fetch = D:/Installs/dev/ruby
+[location "ruby4.0"]
+	fetch = D:/Installs/dev/ruby
 
 [location "zig"]
 	fetch = D:/Installs/dev/zig
