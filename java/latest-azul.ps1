@@ -48,7 +48,14 @@ $packages = @{
       ArchiveTypes     = @("deb", "tar.gz")
       Prefix           = "linux/"
     }
-    17 = @{
+    21 = @{
+      OperatingSystems = @("linux-glibc")
+      Architectures    = @("amd64", "aarch64")
+      PackageTypes     = @("jdk")
+      ArchiveTypes     = @("deb", "tar.gz")
+      Prefix           = "linux/"
+    }
+    25 = @{
       OperatingSystems = @("linux-glibc")
       Architectures    = @("amd64", "aarch64")
       PackageTypes     = @("jdk")
