@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$archiveRegex = "^zulu(?<release>\d+(\.\d+){2,3})-ca(?<openfx>-fx)?-(?<usage>jre|jdk)(?<version>\d+(\.\d+){1,2})-win_(?<arch>i.86|x64|aarch64)\.(?<ext>zip|msi)$"
+$archiveRegex = "^zulu(?<release>\d+(\.\d+){2,3})-ca(?<openfx>-fx)?-(?<usage>jre|jdk)(?<version>\d+(\.\d+){1,2})-(win|linux)_(?<arch>i.86|x64|aarch64|amd64)\.(?<ext>zip|msi|deb)$"
 
 $discardFolder = "_t"
 
