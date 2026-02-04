@@ -81,6 +81,17 @@ function script:decode_value([String]$str) {
 function ConvertFrom-ConfigFile {
   [CmdletBinding()]
   param(
+    # Specifies a path to one or more locations. Unlike the Path parameter, the value of the LiteralPath parameter is
+    # used exactly as it is typed. No characters are interpreted as wildcards. If the path includes escape characters,
+    # enclose it in single quotation marks. Single quotation marks tell Windows PowerShell not to interpret any
+    # characters as escape sequences.
+    [Parameter(Mandatory=$false,
+               Position=0,
+               ParameterSetName="Location",
+               ValueFromPipelineByPropertyName=$true,
+               HelpMessage="Literal path to one or more locations.")]
+    [string]
+    $location,
     [parameter(ValueFromPipeline)]$contents
   )
 
@@ -101,6 +112,11 @@ function ConvertFrom-ConfigFile {
         $name = $Matches[1]
         $value = decode_value $Matches[2]
         "$section.$name=$value"
+        if ($location -and ("$section.$name" -eq "include.path")) {
+          $file = [System.IO.Path]::Combine($location, $value)
+          $file = [System.IO.Path]::GetFullPath($file)
+          script:load_cfg($file)
+        }
       } else {
         throw "malformed line: $line"
       }
@@ -113,11 +129,12 @@ function script:load_cfg($file) {
     return $null
   }
 
+  $location = Split-Path $file -Parent -Resolve
   try {
     # ReadAllLines will detect the encoding of the file automatically
     # Ref: https://docs.microsoft.com/en-us/dotnet/api/system.io.file.readalllines?view=netframework-4.5
     $content = [System.IO.File]::ReadAllLines($file)
-    return ($content | ConvertFrom-ConfigFile -ErrorAction Stop)
+    return ($content | ConvertFrom-ConfigFile -Location $location -ErrorAction Stop)
   } catch {
     Write-Host "ERROR loading $file`: $($_.exception.message)"
   }
