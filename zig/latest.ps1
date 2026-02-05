@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 
 $index = "https://ziglang.org/download/index.json"
 
-$versionRegex = "^(?<version>\d+\.\d+(?:\.\d+){0,2})(?<dev>-dev\.\d+)?$"
+$versionRegex = "^(?<version>(?<branch>\d+\.\d+)(?:\.\d+){0,2})(?<dev>-dev\.\d+)?$"
 
 $archs = @(
   "x86_64-windows"
@@ -38,13 +38,20 @@ if ($DevOnly) {
   $versions = $json | Get-Member -MemberType NoteProperty -Name "master" | Select-Object -ExpandProperty Name
 }
 else {
-  $versions = $json | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | Where-Object {
-    $_ -match $versionRegex
-  } | Sort-Object -Unique -Descending -Property {
+  $versions = $json | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name | ForEach-Object {
     if ($_ -match $versionRegex) {
-      $Matches.version -as [version]
+      [PSCustomObject]@{
+        Branch  = $Matches.branch -as [Version]
+        Version = $Matches.version -as [Version]
+      }
     }
-  }, { $_ }
+  } | Group-Object Branch | ForEach-Object {
+    if ($_.Count -ge 1) {
+      $_.Group | Sort-Object -Unique -Descending -Property Version | Select-Object -First 1
+    }
+  } | Sort-Object -Descending -Property Branch | ForEach-Object {
+    "$($_.Version)"
+  }
 }
 
 
@@ -264,7 +271,7 @@ $files | ForEach-Object {
 }
 
 # Create all URL shortcuts for documentations and release notes
-Write-Host $shortcuts
+# Write-Host $shortcuts
 $shortcuts | ForEach-Object {
   $shortcut = $_
   $filename = "$($shortcut.Version)/$($shortcut.Name).url"
