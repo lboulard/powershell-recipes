@@ -39,10 +39,6 @@ if (-not $archives) {
 }
 
 function Get-7ZipPath {
-    # Try PATH first
-    #$7zPath = Get-Command 7z -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue
-    #if ($7zPath) { return $7zPath }
-
     $registryPaths = @(
         "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
         "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall",
@@ -75,11 +71,24 @@ function Get-7ZipPath {
         if ($foundPath) { break }
     }
 
+    # Fallback to PATH, also try 7zr.exe command line only version of 7-Zip
+    if (-not $foundPath) {
+        $7zPath = Get-Command 7z -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue
+        if ($7zPath) {
+            $foundPath = $7zPath
+        } else {
+            $7zrPath = Get-Command 7zr -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue
+            if ($7zrPath) {
+                $foundPath = $7zrPath
+            }
+        }
+    }
+
     if ($foundPath) {
         return $foundPath
     }
     else {
-        throw "7z.exe not found in PATH or registry"
+        throw "7z.exe or 7zr.exe not found in PATH or registry"
     }
 }
 function Get-LinkInfo {
@@ -178,6 +187,7 @@ if (-Not (Test-Path $targetPath)) {
     # Use 7-Zip to extract
     Write-Output "Extracting $($archive.Name) to temporary folder..."
     $sevenZip = Get-7ZipPath
+    Write-Host "Using `"${sevenZip}`" as extractor"
     Expand-7Zip -SevenZipExe $sevenZip -ArchivePath $archive -OutputPath $tempPath
 
     # Ensure expected folder exists in archive
