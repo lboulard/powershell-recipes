@@ -10,8 +10,8 @@ $ErrorActionPreference = "Stop"
 $project = "llvm/llvm-project"
 $tagPattern = "(?<tag>llvmorg-(?<version>\d+\.\d+(\.\d+)+))"
 $wanted = @(
-  "^LLVM-\d+(.\d+)+-[wW]in(dows-[xX])?64(\.exe|\.tar\..+)(\.sig|\.asc)?$"
-  "^clang\+llvm-\d+(.\d+)+-x86_64-pc-windows-msvc(?:\.7z|\.tar\.xz)(?:\.sig)?$") -join "|"
+  "^LLVM-\d+(.\d+)+-[wW]in(dows-[xX])?64(\.exe|\.tar\..+)(\.sig|\.asc|.jsonl)?$"
+  "^clang\+llvm-\d+(.\d+)+-x86_64-pc-windows-msvc(?:\.7z|\.tar\.xz)(?:\.sig|\.jsonl)?$") -join "|"
 
 $nameMangle = {
   # manipulate $name, $version and $tag are accessible from tag pattern parsing
