@@ -4,12 +4,15 @@
 CD /D "%LOCATION%"
 @IF ERRORLEVEL 1 GOTO :exit
 
+@IF NOT DEFINED PREFIX IF EXIST C:\DEV       SET "PREFIX=C:\DEV\SDK"
+@IF NOT DEFINED PREFIX IF DEFINED LBHOME     IF EXIST "%LBHOME%\SDK" SET "PREFIX=%LBHOME%\SDK"
+@IF NOT DEFINED PREFIX IF DEFINED LBPROGRAMS SET "PREFIX=%LBPROGRAMS%\Apps"
+
 @where /Q pwsh.exe
-@IF %ERRORLEVEL% EQU 0 (
-  pwsh.exe -noprofile "%~dpn0.ps1"
-) ELSE (
-  PowerShell.exe -noprofile "%~dpn0.ps1"
-)
+@SET PWSH=PowerShell.exe
+@IF NOT ERRORLEVEL 1 @SET PWSH=pwsh.exe
+
+%PWSH% -noprofile "%~dpn0.ps1" -Prefix %PREFIX%
 
 :exit
 @SET ERR=%ERRORLEVEL%

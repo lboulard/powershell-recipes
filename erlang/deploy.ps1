@@ -1,4 +1,6 @@
 param(
+  [Parameter(Position=0, mandatory=$true, HelpMessage="Install prefix path")]
+  [String]$Prefix,
   [Parameter(HelpMessage = "process development version, not stable version")]
   [switch]$DevOnly = $false
 )
@@ -10,13 +12,7 @@ $root = Get-Location
 $versionRegex = "^otp_win64_(?<version>\d+(?:\.\d+)+)\.zip$"
 
 $folderRegex = "^erlang-(?<version>\d+\.\d+(?:\.\d+){0,2})$"
-$lbPrograms = $Env:LBPROGRAMS
-$prefix = $lbPrograms
-$dest = Join-Path $prefix "Apps"
 
-if (-not $prefix) {
-  throw "prefix not defined. Is LBPROGRAMS environment variable defined?"
-}
 if (-not (Test-Path $prefix -PathType Container)) {
   throw "${prefix}: directory not found"
 }
@@ -62,7 +58,7 @@ $toDeploy = $selected | Select-Object -First 1
 # $toDeploy | Select-Object FullName
 
 function relative([string]$s) {
-  ($s -replace [Regex]::Escape($prefix), '').Trim('\\')
+  ($s -replace [Regex]::Escape($Prefix), '').Trim('\\')
 }
 
 Write-Host ":::: " -NoNewline
@@ -119,7 +115,7 @@ try {
     $version = $Matches.Version
     $basename = "erlang-$version"
 
-    $installDir = Join-Path $dest $basename
+    $installDir = Join-Path $Prefix $basename
     $workDir = "${installDir}-temp.${PID}"
 
     New-Item $workDir -ItemType directory -Force | Out-Null
@@ -139,7 +135,7 @@ try {
     Move-Item -Path $workDir -Destination $installDir -Force
 
     # create symbolic link
-    New-Symboliclink -Path "$dest/erl" -Value ".\$basename"
+    New-Symboliclink -Path "$Prefix/erl" -Value ".\$basename"
   }
 } finally {
   if ($workDir -and (Test-Path $workDir)) {
