@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 # https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_preference_variables?view=powershell-7.4#verbosepreference
 # $VerbosePreference = "Continue"
 
-$branch = "27|28"
+$branch = "27|28|29|30"
 
 # https://github.com/erlang/otp/releases/download/OTP-28.1/otp_win64_28.1.exe
 # https://github.com/erlang/otp/releases/download/OTP-28.1/otp_win64_28.1.zip
