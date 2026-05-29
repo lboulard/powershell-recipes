@@ -59,7 +59,7 @@ if ($versions.length -gt 1) {
 $version = $versions[0].toString()
 
 function Read-ContentDispositionFilename($contentDisposition) {
-  $f = $contentDisposition -Split ";"
+  $f = $contentDisposition -split ";"
   foreach ($item in $f) {
     $item = $item.Trim()
     if ($item.StartsWith("filename=")) {
@@ -73,7 +73,7 @@ function Read-ContentDispositionFilename($contentDisposition) {
     } elseif ($item.StartsWith("filename*=")) {
       $value = $item.SubString(10)
       if ($value) {
-        $items = $value -Split "'"
+        $items = $value -split "'"
         if ($items.length -eq 3) {
           $encoding, $lang, $value = $items
           if ($value -and $value[0] -eq '"') {
@@ -102,13 +102,13 @@ function Read-ContentDispositionFilename($contentDisposition) {
 function url_remote_filename($url) {
   $uri = (New-Object URI $url)
   $basename = Split-Path $uri.PathAndQuery -Leaf
-  If ($basename -match ".*[?=]+([\w._-]+)") {
+  if ($basename -match ".*[?=]+([\w._-]+)") {
     $basename = $matches[1]
   }
-  If (($basename -notlike "*.*") -or ($basename -match "^[v.\d]+$")) {
+  if (($basename -notlike "*.*") -or ($basename -match "^[v.\d]+$")) {
     $basename = Split-Path $uri.AbsolutePath -Leaf
   }
-  If (($basename -notlike "*.*") -and ($uri.Fragment -ne "")) {
+  if (($basename -notlike "*.*") -and ($uri.Fragment -ne "")) {
     $basename = $uri.Fragment.Trim('/', '#')
   }
   return $basename
@@ -279,7 +279,7 @@ function Invoke-Download ($url, $to, $headers, $progress, $outdir) {
   if ($lastModifiedDate) {
     Write-Host " # Last modified time: $lastModifiedDate"
   }
-  
+
   $parent = Split-Path -Parent -Path $fullPath
   if ($parent) {
     if (-not (Test-Path $parent -PathType Container)) {
