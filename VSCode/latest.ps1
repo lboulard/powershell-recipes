@@ -5,7 +5,7 @@
 
 $ErrorActionPreference = "Stop"
 
-$releaseURL = "https://code.visualstudio.com/updates"
+$releaseURL = "https://update.code.visualstudio.com/api/update/win32-x64-archive/stable/latest"
 $downloadURL = "https://update.code.visualstudio.com"
 $versionPattern = "(?<version>\d+\.\d+\.\d+)"
 
@@ -15,48 +15,22 @@ if ($location) {
   Set-Location $location
 }
 
-function Get-HTML {
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Uri
-  )
-  try {
-    $html = New-Object -Com "HTMLFile"
-    if ($html) {
-      $response = Invoke-WebRequest -Uri $Uri -UseBasicParsing
-      if ($html | Get-Member -Name "IHTMLDocument2_write" -Type Method) {
-        # PowerShell 5.1
-        $html.IHTMLDocument2_write($response.Content)
-      } else {
-        $html.write([ref]$response.Content)
-      }
-      return $html
-    } else {
-      throw "failed to create HTML object"
-    }
-  } catch {
-    Write-Error "Error: $($_.Exception.Message), line $($_.InvocationInfo.ScriptLineNumber)"
-    throw "download or HTML parsing failed"
-  }
+$response = Invoke-WebRequest $releaseURL -UseBasicParsing
+if ($response.StatusCode -ne 200) {
+  Write-Error "Error: ${releaseURL}, status $($response.StatusCode)"
+  throw "${releaseURL}, status $($response.StatusCode)"
 }
+Write-Host "${releaseURL}: status $($response.StatusCode)"
+$json = ConvertFrom-Json $response.Content
+Write-Output $json
 
-$html = Get-HTML -Uri $releaseURL
+$version = $json.productVersion
 
-$versions = $html.links | ForEach-Object { $_.pathname } | ForEach-Object {
-  if ($_ -match $versionPattern) {
-    [version]$Matches.version
-  }
-} | Sort-Object -Descending -Unique
-
-if (-not $versions) {
-  Write-Error "Error: no versions found"
+if (-not $version) {
+  Write-Error $json
+  Write-Error "Error: Version not found"
   throw "no version found"
 }
-if ($versions.length -gt 1) {
-  Write-Warning "many versions found, using latest"
-  Write-Host $versions
-}
-$version = $versions[0].toString()
 
 function Read-ContentDispositionFilename($contentDisposition) {
   $f = $contentDisposition -split ";"
