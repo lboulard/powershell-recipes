@@ -5,16 +5,16 @@ Source: <https://docs.microsoft.com/en-us/powershell/module/appx/?view=win10-ps>
 Run inside a vanilly CMD.EXE/Powershell instance.
 
 Install:
-  Powershell -noprofile -Command Add-AppxPackage -Path "Microsoft.WindowsTerminal_1.24.11321.0_8wekyb3d8bbwe.msixbundle"
+  Powershell -noprofile -Command Add-AppxPackage -Path "Microsoft.WindowsTerminal_1.24.11911.0_8wekyb3d8bbwe.msixbundle"
 
 Remove:
-  Powershell -noprofile -Command Remove-AppxPackage -Package Microsoft.WindowsTerminal_1.24.11321.0_8wekyb3d8bbwe
+  Powershell -noprofile -Command Remove-AppxPackage -Package Microsoft.WindowsTerminal_1.24.11911.0_8wekyb3d8bbwe
 
 Information:
   Powershell -noprofile -Command Get-AppPackage -name "Microsoft.WindowsTerminal"
 
-Microsoft.WindowsTerminal_1.24.11321.0_8wekyb3d8bbwe.msixbundle
-SHA256 8C162040B3E96C6DBD558FB991E79BC2ADFF7281EF431ED694554AC6FBE50887
+Microsoft.WindowsTerminal_1.24.11911.0_8wekyb3d8bbwe.msixbundle
+SHA256 54EF0C69A912DE511475DF02E57E5193E69193A4CF95A19D508D2705FD602E42
 
-Microsoft.WindowsTerminal_1.24.11321.0_x64.zip
-SHA256 7CAEF554147E5498ED1BECDCA73CDEDB79FBC81F89032E46AE9B095C53433812
+Microsoft.WindowsTerminal_1.24.11911.0_x64.zip
+SHA256 7691EFEB71C8DD0B95536C84E366FA4CF809A42C534912F9CEFA1056534383BD
