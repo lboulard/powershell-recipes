@@ -52,7 +52,7 @@ $maintained = $releases | ForEach-Object {
   }
 } | Group-Object {
   "{0:d4}.{1:d4}" -f $_.Major, $_.Minor
-} | Sort-Object -Descending Name | Select-Object -First 2 | ForEach-Object {
+} | Sort-Object -Descending Name | Select-Object -First 3 | ForEach-Object {
   $_.Group | Group-Object {
     "{0:d4}.{1:d4}.{2:d4}" -f $_.Major, $_.Minor, $_.version.Build
   } | Sort-Object -Descending Name | Select-Object -First 1
