@@ -59,13 +59,13 @@ Get-Url $files -ProjectName 'busybox'
 
 $location = (Get-RecipesConfig).GetFetchLocation('busybox')
 
+if (-not (Test-Path "${location}/man1/busybox-$version.1" )) {
+  Expand-GZip "${location}/man1/busybox-$version.1.gz"
+}
+
 try {
   $formerLocation = Get-Location
   Set-Location $location
-
-  if (-not (Test-Path "man1/busybox-$version.1" )) {
-    Expand-GZip "man1/busybox-$version.1.gz"
-  }
 
   if (!$error) {
     @(
