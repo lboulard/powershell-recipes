@@ -63,7 +63,7 @@ $html.Links | ForEach-Object { $_.pathname } | ForEach-Object {
   $releaseLinks = (Get-Html -Uri $_).Links | ForEach-Object { $_.pathname }
   $links += $releaseLinks | Where-Object {
     # .exe are the default since 3.4, .msi before
-    $_ | Write-Verbose
+    if ($_) { $_ | Write-Verbose }
     $_ -match ("^python-" + $versionPattern + "(-amd64\.exe|.amd64.msi)$")
   }
 }
