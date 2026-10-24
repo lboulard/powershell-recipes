@@ -43,23 +43,29 @@ $destDir = "irfanview-${version}"
 # https://github.com/microsoft/winget-pkgs/tree/master/manifests/i/IrfanSkiljan/IrfanView
 # zip installer is not found on TechSoft downloads
 
-if ($false) {
+# Direct download does not always work
+if ($true) {
 
   $files = @(
-    # "https://files03.tchspt.com/down/iview${cleanVersion}_x64_setup.exe"
-    "https://files02.tchspt.com/down/iview${cleanVersion}_x64_setup.exe"
-    "https://files02.tchspt.com/down/iview${cleanVersion}_plugins_x64_setup.exe"
-    # "https://files02.tchspt.com/down/iview${cleanVersion}_x64.zip"
-    # "https://files02.tchspt.com/down/iview${cleanVersion}_plugins_x64.zip"
+    # https://sourceforge.net/projects/irfanview/files/iview475_x64_setup.exe/download
+    # https://www.irfanview.info/files/iview476_setup.exe
+
+    # https://www.irfanview.com/download_sites.htm
+    # This page has direct download, avoid interception using a Referer and real User-Agent
+
+    "https://www.irfanview.info/files/iview476_x64_setup.exe"
+    "https://www.irfanview.info/files/iview476_plugins_x64_setup.exe"
+    "https://www.irfanview.info/files/iview476_x64.zip"
+    "https://www.irfanview.info/files/iview476_plugins_x64.zip"
   ) | ForEach-Object {
     $url = [System.Uri]($_)
     $filename = [Uri]::UnescapeDataString($url.Segments[-1])
     "${url}#${destDir}/${filename}"
   }
 
-  # Direct download does not work
   Get-Url $files -Headers @{
-    'Referer'    = 'https://www.techspot.com/'
+    'Referer'    = $url
+    'User-Agent' = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36"
   } -ProjectName irfanview
 }
 
@@ -79,7 +85,7 @@ New-Item -Path $destDir -ItemType Directory -Force | Out-Null
   $basename = Split-Path -Path $filename -LeafBase
   @{
     'url'      = "https://www.fosshub.com/IrfanView.html?dwl=${filename}"
-    'shortCut' = "${destDir}/${basename}.url"
+    'shortCut' = "${destDir}/links/${basename}.url"
   }
 } | ForEach-Object {
   $url = $_.url
