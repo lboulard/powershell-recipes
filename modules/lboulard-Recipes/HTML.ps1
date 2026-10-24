@@ -17,6 +17,8 @@ function Invoke-HtmlRequest {
     "UseBasicParsing" = $true
   }
   if ($OutFile) { $requestArgs.Add('OutFile', $OutFile) }
+  $proxy = [Net.WebRequest]::DefaultWebProxy
+  if ($proxy) { $requestArgs.Add('Proxy', $proxy.GetProxy($Uri)) }
 
   return Invoke-WebRequest @requestArgs
 }

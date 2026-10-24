@@ -132,6 +132,8 @@ function Invoke-GitHubApi() {
     "UserAgent"       = (Get-RecipesConfig).GetUserAgent($Url)
     "UseBasicParsing" = $true
   }
+  $proxy = [Net.WebRequest]::DefaultWebProxy
+  if ($proxy) { $requestArgs.Add('Proxy', $proxy.GetProxy($Url)) }
 
   # maximum 5 tentatives
   while ($retryCount -lt $maxTry) {
@@ -140,7 +142,7 @@ function Invoke-GitHubApi() {
     Write-Verbose "GitHub API: ${Url}"
     if ($psVersion.Major -eq 5) {
       $response = try {
-     (Invoke-WebRequest @requestArgs -ErrorAction Stop).BaseResponse
+        (Invoke-WebRequest @requestArgs -ErrorAction Stop).BaseResponse
       } catch [System.Net.WebException] {
         Write-Verbose "An exception was caught: $($_.Exception.Message)"
         $_.Exception.Response
@@ -393,8 +395,23 @@ function Get-GitHubLatestReleaseUrl() {
   )
 
   $lastReleaseURL = "https://github.com/$Project/releases/latest"
+
+  $Headers = @{
+    "Accept" = 'application/vnd.github+json'
+  }
+
+  $requestArgs = @{
+    "Method"          = "Head"
+    "Uri"             = $lastReleaseURL
+    "Headers"         = $Headers
+    "UserAgent"       = (Get-RecipesConfig).GetUserAgent($Url)
+    "UseBasicParsing" = $true
+  }
+  $proxy = [Net.WebRequest]::DefaultWebProxy
+  if ($proxy) { $requestArgs.Add('Proxy', $proxy.GetProxy($lastReleaseURL)) }
+
   try {
-    $response = (Invoke-WebRequest -Method Head -Uri $lastReleaseURL -ErrorAction Ignore).BaseResponse
+    $response = (Invoke-WebRequest @requestArgs -ErrorAction Ignore).BaseResponse
     $statusCode = $response.StatusCode
     Write-Verbose ("`$statusCode={0}" -f $statusCode)
   } catch {
