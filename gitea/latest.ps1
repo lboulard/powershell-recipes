@@ -18,7 +18,7 @@ if ($Branch) {
 }
 $versionPattern = "(?<version>\d+\.\d+\.\d+)"
 
-$wanted = "/gitea-" + $versionPattern + "-windows-4\.0-amd64\.exe(\.(asc|sha256|asc\.sha256))?$"
+$wanted = "/gitea-" + $versionPattern + "-windows(?:-4\.0)?-amd64\.exe(\.(asc|sha256|asc\.sha256))?$"
 
 $url = [System.Uri]$IndexURL
 
