@@ -1,10 +1,12 @@
 $ErrorActionPreference = "Stop"
 
-$archiveRegex = "^zulu(?<release>\d+(\.\d+){2,3})-ca(?<openfx>-fx)?-(?<usage>jre|jdk)(?<version>\d+(\.\d+){1,2})-(win|linux)_(?<arch>i.86|x64|aarch64|amd64)\.(?<ext>zip|msi|deb|tar\.gz|tar\.xz)$"
+. (Join-Path $PSScriptRoot 'MultiVersion.ps1')
+
+$archiveRegex = "^zulu(?<release>\d+(?:\.\d+)+)-ca(?<openfx>-fx)?-(?<usage>jre|jdk)(?<version>\d+(?:\.\d+)+)-(?<platform>win|linux)_(?<arch>i.86|x64|arm64|aarch64|amd64)\.(?<ext>zip|msi|deb|tar\.gz|tar\.xz)$"
 
 $discardFolder = "_t"
 
-$archives = Get-ChildItem -Directory | ForEach-Object {
+$allArchives = Get-ChildItem -Directory | ForEach-Object {
   if ($_.Name -ne $discardFolder) {
     Get-ChildItem $_ -File -Recurse
   }
@@ -13,36 +15,37 @@ $archives = Get-ChildItem -Directory | ForEach-Object {
 } | ForEach-Object {
   if ($_.Name -match $archiveRegex) {
     # Build number if Update number in Java
-    $version = $Matches.version -as [Version]
+    $version = $Matches.version -as [MultiVersion]
 
-    if ($version.Major -le 8) {
-      $javaVersion = [Version]::new(1, $version.Major, $version.Minor)
-      $javaUpdate = $version.Build
-      $id = @($Matches.usage, $javaVersion, "_", $javaUpdate) -Join ""
-    } else {
-      $javaVersion = $version
-      $id = @($Matches.usage, $javaVersion) -Join ""
-      $javaUpdate = $null
-    }
+    $javaVersion = $version
+    $id = @($Matches.usage, $javaVersion) -join ""
+    $javaUpdate = $null
 
     [pscustomobject]@{
       Id            = $id
       DirectoryName = $_.DirectoryName
       Name          = $_.Name
       FullName      = $_.FullName
-      ZuluRelease   = $Matches.release -as [Version]
+      ZuluRelease   = $Matches.release -as [MultiVersion]
       OpenFX        = [bool]$Matches.openfx
       Usage         = $Matches.usage.ToUpper()
       Version       = $version
+      Platform      = $Matches.platform
       Architecture  = $Matches.arch
       Packaging     = $Matches.ext
 
       JavaVersion   = $version.Major
-      JavaUpdate    = $javaUpdate
     }
   }
-} | Group-Object -Property Usage, JavaVersion, Architecture, OpenFx, Packaging | ForEach-Object {
+}
+
+$archives = $allArchives | Group-Object -Property Platform, Usage, JavaVersion, Architecture, OpenFx, Packaging
+$archives = $archives | ForEach-Object {
   $_.Group | Sort-Object -Property ZuluRelease -Descending | Select-Object -Skip 1
+}
+
+if (-not $archives) {
+  Write-Output "No archives to delete"
 }
 
 if ($archives -and (-not (Test-Path $discardFolder))) {

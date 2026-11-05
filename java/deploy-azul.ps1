@@ -21,6 +21,9 @@ param(
 
 
 begin {
+
+  . (Join-Path $PSScriptRoot 'MultiVersion.ps1')
+
   $ErrorActionPreference = "Stop"
 
   @(
@@ -31,10 +34,10 @@ begin {
     "  ●          `$JRE = $JRE"
     "  ● `$Architecture = [$($Architecture -join ', ')]"
     "  ●       `$OpenFX = $OpenFX"
-  ) -Join "`n" | Out-Default
+  ) -join "`n" | Out-Default
 
   if (-not ($JRE -or $JDK)) {
-    Throw "incorrect arguments, at least one of -JDR or -JRE shall be given"
+    throw "incorrect arguments, at least one of -JDR or -JRE shall be given"
   }
 
   function Create-Symboliclink {
@@ -51,10 +54,10 @@ begin {
         # or use this?
         #   islink = [bool]($fileInfo.Attributes -band [IO.FileAttributes]::ReparsePoint)
         if ($fileInfo.LinkType -eq "SymbolicLink") {
-            # see further for usage of ".\" prefix
+          # see further for usage of ".\" prefix
           $upToDate = ($fileInfo.LinkTarget -eq ".\$Value")
         } else {
-          Throw ("{0} is not a symbolic link" -f $Path)
+          throw ("{0} is not a symbolic link" -f $Path)
         }
       }
     }
@@ -88,7 +91,7 @@ begin {
 }
 
 process {
-  $archiveRegex = "^zulu(?<release>\d+(\.\d+){2,3})-ca(?<openfx>-fx)?-(?<usage>jre|jdk)(?<version>\d+(\.\d+){1,2})-win_(?<arch>i.86|x64|aarch64)\.zip$"
+  $archiveRegex = "^zulu(?<release>\d+(\.\d+)+)-ca(?<openfx>-fx)?-(?<usage>jre|jdk)(?<version>\d+(\.\d+)+)-win_(?<arch>i.86|x64)\.zip$"
 
   # ordered by release and version string
   $archives = $FromPath | ForEach-Object {
@@ -99,34 +102,24 @@ process {
     if ($_.Name -match $archiveRegex) {
       $arch = ToNamedArch($Matches.arch)
       # Build number if Update number in Java
-      $version = $Matches.version -as [Version]
+      $version = $Matches.version -as [MultiVersion]
 
       $archInstallPath = Join-Path $InstallPath "zulu-$($arch)"
 
-      if ($version.Major -le 8) {
-        $javaVersion = [Version]::new(1, $version.Major, $version.Minor)
-        $javaUpdate = $version.Build
-        $id = @($Matches.usage, $javaVersion, "_", $javaUpdate) -Join ""
-        $folderLinks = @(
-          @($Matches.usage, "-", $javaVersion) -Join ""
-          @($Matches.usage, "-1.", $version.Major) -Join ""
-        )
-      } else {
-        $javaVersion = $version
-        $id = @($Matches.usage, $javaVersion) -Join ""
-        $javaUpdate = $null
-        $folderLinks = @(
-          @($Matches.usage, "-", $version.Major) -Join ""
-        )
-      }
-      $installName = @($Matches.usage, "-", $version) -Join ""
+      $javaVersion = $version
+      $id = @($Matches.usage, $javaVersion) -join ""
+      $javaUpdate = $null
+      $folderLinks = @(
+        @($Matches.usage, "-", $version.Major) -join ""
+      )
+      $installName = @($Matches.usage, "-", $version) -join ""
 
       [pscustomobject]@{
         Id            = $id
         DirectoryName = $_.DirectoryName
         Name          = $_.Name
         FullName      = $_.FullName
-        ZuluRelease   = $Matches.release -as [Version]
+        ZuluRelease   = $Matches.release -as [MultiVersion]
         OpenFX        = [bool]$Matches.openfx
         Usage         = $Matches.usage.ToUpper()
         Version       = $version
